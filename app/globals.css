@@ -107,6 +107,10 @@ body {
   --tw-border-opacity: 0.1;
 }
 
+.focus-within\:bg-opacity-80:focus-within {
+  --tw-bg-opacity: 0.8;
+}
+
 .icon-home-small {
   --icon-size: 60px;
   --icon-home-radius: 16px;

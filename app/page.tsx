@@ -75,7 +75,7 @@ export default function Home() {
           style={{ width: "567.6px" }}
         >
           <form
-            className="border-opacity-10 bg-opacity-60 search-box flex h-[52px] items-center rounded-[12px] border-[1px] border-solid border-color-white bg-color-m1 transition-colors duration-100 focus-within:bg-opacity-80 focus-within:!opacity-100 w-full"
+            className="border-opacity-10 bg-opacity-60 search-box flex h-[52px] items-center rounded-[12px] border-[1px] border-solid border-color-white bg-color-m1 transition-colors duration-100 focus-within:bg-opacity-80 focus-within:!opacity-100 dark:focus-within:bg-opacity-70 w-full"
             style={{ opacity: 1 }}
           >
             {/* Search Engine Icon */}
