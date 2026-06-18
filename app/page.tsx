@@ -1,65 +1,71 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="icon-s icon-home-small home h-full w-full">
+      {/* === Video Background === */}
+      <section className="home-wallpaper h-full w-full">
+        <video
+          className="h-full w-full object-cover"
+          src="https://eo.hitfun.top/bg.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+      </section>
+
+      {/* === Main Content Overlay === */}
+      <div className="home-main absolute top-0 left-0 h-full w-full transition-transform duration-300">
+        <section className="page-active absolute flex h-full w-full flex-col items-center">
+          {/* === Clock Display === */}
+          <div className="mt-[28.5vh] flex font-[family-name:var(--font-mind-demi-bold)] text-[130px] leading-[100px] text-[rgba(245,245,250,0.8)] max-md:text-[70px] max-md:leading-[70px]">
+            <p className="flex-shrink-0 text-right">18</p>
+            <span className="mx-2">:</span>
+            <p className="flex-shrink-0 text-center">14</p>
+            <span className="mx-2">:</span>
+            <p className="w-[170px] flex-shrink-0 text-left max-md:w-[90px]">03</p>
+          </div>
+
+          {/* === Date Display === */}
+          <p className="absolute top-[calc(28.5vh+128px)] font-[family-name:var(--font-mind-regular)] text-[32px] leading-[39px] text-[rgba(245,245,250,0.8)] max-md:top-[calc(28.5vh+80px)] max-md:text-[20px]">
+            <span>2026年6月10日&nbsp;&nbsp;</span>
+            <span>四月廿五&nbsp;&nbsp;</span>
+            <span>星期三</span>
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        </section>
+
+        {/* === Search Bar === */}
+        <section
+          className="absolute-center top-[12vh] w-[568px] max-w-[86vw] transition-opacity duration-100 focus-within:opacity-100"
+          style={{ width: "567.6px" }}
+        >
+          <form
+            className="border-opacity-10 bg-opacity-60 search-box flex h-[52px] items-center rounded-[12px] border-[1px] border-solid border-color-white bg-color-m1 transition-colors duration-100 focus-within:bg-opacity-80 focus-within:!opacity-100 w-full"
+            style={{ opacity: 1 }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            {/* Search Engine Icon */}
+            <div className="flex h-full w-[52px] items-center justify-center">
+              <div className="flex h-[28px] w-[28px] cursor-pointer items-center justify-center rounded-[8px] bg-opacity-80 hover:bg-white/80">
+                <section
+                  className="flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]"
+                  style={{
+                    backgroundImage:
+                      'url("https://static.wetab.link/user-custom-icon/zh/644b78ec2a77ac35cd5059c5/user-custom-icon1isknn3l5l3vhd0tb59123a90bv.png?imageMogr2/thumbnail/48x/format/webp/blur/1x0/quality/100|imageslim")',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Search Input */}
+            <input
+              tabIndex={1}
+              className="h-full grow bg-transparent py-[12px] pl-[4px] pr-[42px] text-[16px] text-color-t1 placeholder:text-color-t1 placeholder:opacity-40 outline-none"
+              type="search"
+              placeholder="输入搜索内容"
+              autoComplete="off"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+          </form>
+        </section>
+      </div>
     </div>
   );
 }

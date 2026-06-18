@@ -1,26 +1,141 @@
 @import "tailwindcss";
 
+/* === Custom Fonts (WeTab NeverMind) === */
+@font-face {
+  font-family: "mind-demi-bold";
+  src: url("https://static.infinitytab.com/font/NeverMind-DemiBold.ttf") format("TrueType");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "mind-regular";
+  src: url("https://static.infinitytab.com/font/NeverMind-Regular.ttf") format("TrueType");
+  font-display: swap;
+}
+
+/* === CSS Custom Properties (Light Theme - matches original) === */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-black: 0 0 0;
+  --color-white: 255 255 255;
+  --color-blue: 74 122 255;
+  --color-green: 52 199 89;
+  --color-yellow: 255 149 0;
+  --color-orange: 255 155 48;
+  --color-red: 255 77 79;
+  --color-t1: 28 28 30;
+  --color-t2: 58 58 60;
+  --color-t3: 142 142 148;
+  --color-t4: 199 199 204;
+  --color-b1: 209 209 214;
+  --color-b2: 229 229 234;
+  --color-b3: 248 248 248;
+  --color-b4: 255 255 255;
+  --color-b5: 255 255 255;
+  --color-m1: 255 255 255;
+  --color-m2: 0 0 0;
+  --color-todo-t1: 47 87 255;
+  --color-todo-t2: 83 147 255;
+  --color-note-t1: 192 131 93;
+  --color-note-t2: 198 174 159;
+  --color-bookmark-t1: 98 173 91;
+  --color-bookmark-b1: 248 248 248;
+  --color-bookmark-b2: 255 255 255;
+  --color-record-t1: 255 115 48;
 }
 
+/* === Tailwind CSS v4 Theme Extensions === */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mind-demi-bold: "mind-demi-bold", sans-serif;
+  --font-mind-regular: "mind-regular", sans-serif;
+  --color-m1: rgb(var(--color-m1));
+  --color-t1: rgb(var(--color-t1));
+  --color-t2: rgb(var(--color-t2));
+  --color-t3: rgb(var(--color-t3));
+  --color-t4: rgb(var(--color-t4));
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* === Base Styles === */
+*,
+::before,
+::after {
+  border: 0 solid;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* === Custom Utility Classes === */
+.body-root {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Micro Hei", sans-serif;
+  font-weight: 500;
+}
+
+.absolute-center {
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.bg-color-m1 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(var(--color-m1) / var(--tw-bg-opacity));
+}
+
+.text-color-t1 {
+  --tw-text-opacity: 1;
+  color: rgb(var(--color-t1) / var(--tw-text-opacity));
+}
+
+.border-color-white {
+  --tw-border-opacity: 1;
+  border-color: rgb(var(--color-white) / var(--tw-border-opacity));
+}
+
+.bg-opacity-60 {
+  --tw-bg-opacity: 0.6;
+}
+
+.border-opacity-10 {
+  --tw-border-opacity: 0.1;
+}
+
+.icon-home-small {
+  --icon-size: 60px;
+  --icon-home-radius: 16px;
+}
+
+/* Search box focus transitions */
+.search-box {
+  transition: background-color 0.1s ease, opacity 0.1s ease;
+}
+
+/* Remove default search input clear button */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="search"]::-ms-clear {
+  display: none;
+}
+
+/* Placeholder styling */
+input::placeholder {
+  opacity: 0.4;
+}
+
+/* Video element reset */
+video {
+  display: block;
+  vertical-align: middle;
+  height: auto;
+  max-width: 100%;
 }
