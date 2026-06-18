@@ -131,11 +131,3 @@ input[type="search"]::-ms-clear {
 input::placeholder {
   opacity: 0.4;
 }
-
-/* Video element reset */
-video {
-  display: block;
-  vertical-align: middle;
-  height: auto;
-  max-width: 100%;
-}
