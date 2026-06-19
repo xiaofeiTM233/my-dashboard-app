@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 @font-face {
     font-family: "mind-bold";
     src: url("/font/NeverMind-Bold.ttf") format("TrueType")
@@ -54,17 +53,6 @@
   --color-bookmark-b1: 248 248 248;
   --color-bookmark-b2: 255 255 255;
   --color-record-t1: 255 115 48;
-}
-
-/* === Tailwind CSS v4 Theme Extensions === */
-@theme inline {
-  --font-mind-demi-bold: "mind-demi-bold", sans-serif;
-  --font-mind-regular: "mind-regular", sans-serif;
-  --color-m1: rgb(var(--color-m1));
-  --color-t1: rgb(var(--color-t1));
-  --color-t2: rgb(var(--color-t2));
-  --color-t3: rgb(var(--color-t3));
-  --color-t4: rgb(var(--color-t4));
 }
 
 /* === Base Styles === */

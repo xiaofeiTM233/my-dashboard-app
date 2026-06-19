@@ -2,12 +2,21 @@
 
 import { useState, useEffect, useRef } from "react";
 
+// Search engine configuration
+const searchEngines = [
+  { id: "baidu", name: "百度", icon: "/baidu.png", url: "https://www.baidu.com/s?wd=" },
+  { id: "bing", name: "必应", icon: "/bing.png", url: "https://www.bing.com/search?q=" },
+  { id: "google", name: "谷歌", icon: "/google.png", url: "https://www.google.com/search?q=" },
+];
+
 export default function Home() {
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [currentEngine, setCurrentEngine] = useState(searchEngines[0]);
+  const [showEngineSelector, setShowEngineSelector] = useState(false);
   const isInitialMount = useRef(true);
   const searchBoxRef = useRef<HTMLDivElement>(null);
 
@@ -102,8 +111,8 @@ export default function Home() {
   const handleSuggestionClick = (suggestion: string) => {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
-    // Open search in new tab
-    window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(suggestion)}`, "_blank");
+    // Open search in new tab using current engine
+    window.open(`${currentEngine.url}${encodeURIComponent(suggestion)}`, "_blank");
   };
 
   // Handle keyboard navigation
@@ -124,7 +133,7 @@ export default function Home() {
         if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
           handleSuggestionClick(suggestions[selectedIndex]);
         } else if (searchQuery.trim()) {
-          window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(searchQuery)}`, "_blank");
+          window.open(`${currentEngine.url}${encodeURIComponent(searchQuery)}`, "_blank");
         }
         break;
       case "Escape":
@@ -137,15 +146,16 @@ export default function Home() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(searchQuery)}`, "_blank");
+      window.open(`${currentEngine.url}${encodeURIComponent(searchQuery)}`, "_blank");
     }
   };
 
-  // Close suggestions when clicking outside
+  // Close suggestions and engine selector when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
         setShowSuggestions(false);
+        setShowEngineSelector(false);
       }
     };
 
@@ -206,12 +216,17 @@ export default function Home() {
           >
             {/* Search Engine Icon */}
             <div className="flex h-full w-[52px] items-center justify-center">
-              <div className="flex h-[28px] w-[28px] cursor-pointer items-center justify-center rounded-[8px] bg-opacity-80 hover:bg-color-white hover:bg-opacity-80">
+              <div
+                className="flex h-[28px] w-[28px] cursor-pointer items-center justify-center rounded-[8px] bg-opacity-80 hover:bg-color-white hover:bg-opacity-80"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowEngineSelector(!showEngineSelector);
+                }}
+              >
                 <section
                   className="flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]"
                   style={{
-                    backgroundImage:
-                      'url("/bing.png")',
+                    backgroundImage: `url("${currentEngine.icon}")`,
                   }}
                 />
               </div>
@@ -260,26 +275,18 @@ export default function Home() {
               <div className="wrapper">
                 <ul className="list overflow-auto py-[4px]">
                   {/* Search Engine Options */}
-                  <li className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} onClick={(e) => { e.stopPropagation(); window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(searchQuery)}`, "_blank"); }}>
-                    <div className="ml-[8px] flex max-w-[60%] flex-grow items-center">
-                      <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" style={{ backgroundImage: 'url("/baidu_2.png")' }}></section>
-                      <span className="ml-[12px] max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap text-color-blue">{searchQuery}</span>
-                    </div>
-                    <div className="text-dot mr-[12px] flex max-w-[40%] items-center">
-                      <span className="text-dot text-[12px] text-color-t3">百度</span>
-                      <i className="iconfont icon-arrow_icon ml-[12px] text-[12px] text-color-blue"></i>
-                    </div>
-                  </li>
-                  <li className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} onClick={(e) => { e.stopPropagation(); window.open(`https://www.bing.com/search?q=${encodeURIComponent(searchQuery)}`, "_blank"); }}>
-                    <div className="ml-[8px] flex max-w-[60%] flex-grow items-center">
-                      <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" style={{ backgroundImage: 'url("/bing_2.png")' }}></section>
-                      <span className="ml-[12px] max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap text-color-blue">{searchQuery}</span>
-                    </div>
-                    <div className="text-dot mr-[12px] flex max-w-[40%] items-center">
-                      <span className="text-dot text-[12px] text-color-t3">Bing</span>
-                      <i className="iconfont icon-arrow_icon ml-[12px] text-[12px] text-color-blue"></i>
-                    </div>
-                  </li>
+                  {searchEngines.map((engine) => (
+                    <li key={engine.id} className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} onClick={(e) => { e.stopPropagation(); window.open(`${engine.url}${encodeURIComponent(searchQuery)}`, "_blank"); }}>
+                      <div className="ml-[8px] flex max-w-[60%] flex-grow items-center">
+                        <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" style={{ backgroundImage: `url("${engine.icon}")` }}></section>
+                        <span className="ml-[12px] max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap text-color-blue">{searchQuery}</span>
+                      </div>
+                      <div className="text-dot mr-[12px] flex max-w-[40%] items-center">
+                        <span className="text-dot text-[12px] text-color-t3">{engine.name}</span>
+                        <i className="iconfont icon-arrow_icon ml-[12px] text-[12px] text-color-blue"></i>
+                      </div>
+                    </li>
+                  ))}
                   {/* Search Suggestions */}
                   {suggestions.map((suggestion, index) => (
                     <li
@@ -298,6 +305,42 @@ export default function Home() {
                       </div>
                     </li>
                   ))}
+                </ul>
+              </div>
+            </section>
+          )}
+
+          {/* Engine Selector */}
+          {showEngineSelector && (
+            <section className="engine-box glass-card mt-[4px] border-color-white border-opacity-40 bg-color-m1 bg-opacity-80 px-[20px] pt-[20px] pb-[24px] dark:border-opacity-10 dark:bg-opacity-70 w-full" data-v-7ac19e27="">
+              <div className="wrapper text-[12px]" data-v-7ac19e27="">
+                <ul className="relative grid grid-cols-[repeat(auto-fill,48px)] gap-[20px]" data-v-7ac19e27="">
+                  {searchEngines.map((engine) => (
+                    <li key={engine.id} className="search-drop flex flex-col items-center" data-v-7ac19e27="">
+                      <div
+                        className="group cursor-pointer icon search-drag relative flex h-[48px] w-[48px] items-center justify-center rounded-[12px] bg-color-white bg-opacity-80 transition-colors hover:bg-opacity-100 dark:bg-opacity-[0.06] dark:hover:bg-opacity-20"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentEngine(engine);
+                          setShowEngineSelector(false);
+                        }}
+                        data-v-7ac19e27=""
+                      >
+                        <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" data-v-7ac19e27="" style={{ backgroundColor: 'rgba(0, 0, 0, 0)', backgroundImage: `url("${engine.icon}")` }}></section>
+                      </div>
+                      <div className="mt-[4px] w-[60px] overflow-hidden text-ellipsis whitespace-nowrap text-center text-color-t3" data-v-7ac19e27="">
+                        {engine.name}
+                      </div>
+                    </li>
+                  ))}
+                  <li className="flex flex-col items-center" data-v-7ac19e27="">
+                    <div className="icon flex h-[48px] w-[48px] cursor-pointer items-center justify-center rounded-[12px] bg-color-white bg-opacity-80 transition-colors hover:bg-opacity-100 dark:bg-opacity-[0.06] dark:hover:bg-opacity-20" data-v-7ac19e27="">
+                      <i className="iconfont icon-plus_large_icon text-[24px] text-color-t3" data-v-7ac19e27=""></i>
+                    </div>
+                    <div className="mt-[4px] w-[60px] overflow-hidden text-ellipsis whitespace-nowrap text-center text-color-t3" data-v-7ac19e27="">
+                      添加
+                    </div>
+                  </li>
                 </ul>
               </div>
             </section>
