@@ -1,31 +1,30 @@
 @import "tailwindcss";
 
 @font-face {
-    font-family: "mind-bold";
-    src: url("/font/NeverMind-Bold.ttf") format("TrueType")
+  font-family: "mind-bold";
+  src: url("/font/NeverMind-Bold.ttf") format("TrueType")
 }
 
 @font-face {
-    font-family: "mind-demi-bold";
-    src: url("/font/NeverMind-DemiBold.ttf") format("TrueType")
+  font-family: "mind-demi-bold";
+  src: url("/font/NeverMind-DemiBold.ttf") format("TrueType")
 }
 
 @font-face {
-    font-family: "mind-medium";
-    src: url("/font/NeverMind-Medium.ttf") format("TrueType")
+  font-family: "mind-medium";
+  src: url("/font/NeverMind-Medium.ttf") format("TrueType")
 }
 
 @font-face {
-    font-family: "mind-regular";
-    src: url("/font/NeverMind-Regular.ttf") format("TrueType")
+  font-family: "mind-regular";
+  src: url("/font/NeverMind-Regular.ttf") format("TrueType")
 }
 
 @font-face {
   font-family: "iconfont";
-  src: url("/font/iconfont-3040cc0a.woff2") format("woff2"),url("/font/iconfont-82fad784.woff") format("woff"),url("/font/iconfont-217b3216.ttf") format("truetype")
+  src: url("/font/iconfont-3040cc0a.woff2") format("woff2"), url("/font/iconfont-82fad784.woff") format("woff"), url("/font/iconfont-217b3216.ttf") format("truetype")
 }
 
-/* === CSS Custom Properties (Light Theme - matches original) === */
 :root {
   --color-black: 0 0 0;
   --color-white: 255 255 255;
@@ -53,9 +52,10 @@
   --color-bookmark-b1: 248 248 248;
   --color-bookmark-b2: 255 255 255;
   --color-record-t1: 255 115 48;
+  --font-mind-demi-bold: "mind-demi-bold", sans-serif;
+  --font-mind-regular: "mind-regular", sans-serif;
 }
 
-/* === Base Styles === */
 *,
 ::before,
 ::after {
