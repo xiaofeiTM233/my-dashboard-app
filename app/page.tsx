@@ -1,8 +1,9 @@
+// app/page.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 
-// Search engine configuration
+// 搜索引擎配置
 const searchEngines = [
   { id: "baidu", name: "百度", icon: "/baidu.png", url: "https://www.baidu.com/s?wd=" },
   { id: "bing", name: "必应", icon: "/bing.png", url: "https://www.bing.com/search?q=" },
@@ -21,13 +22,13 @@ export default function Home() {
   const searchBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Set initial time on first mount
+    // 首次挂载时设置初始时间
     if (isInitialMount.current) {
       isInitialMount.current = false;
       setCurrentTime(new Date());
     }
 
-    // Update time every second
+    // 每秒更新时间
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -54,7 +55,7 @@ export default function Home() {
     return weekdays[date.getDay()];
   };
 
-  // Debounce function to limit API calls
+  // 防抖函数，限制 API 调用频率
   const debounce = <T extends (...args: never[]) => unknown>(func: T, delay: number) => {
     let timeoutId: NodeJS.Timeout;
     return (...args: Parameters<T>) => {
@@ -63,7 +64,7 @@ export default function Home() {
     };
   };
 
-  // Fetch suggestions from Baidu API
+  // 从百度 API 获取搜索建议
   const fetchSuggestions = async (query: string) => {
     if (!query.trim()) {
       setSuggestions([]);
@@ -72,19 +73,19 @@ export default function Home() {
     }
 
     try {
-      // Use JSONP to call Baidu suggestion API
+      // 使用 JSONP 调用百度建议 API
       const callbackName = `baidu_suggestion_${Date.now()}`;
       const script = document.createElement("script");
       script.src = `https://suggestion.baidu.com/su?p=3&ie=UTF-8&cb=${callbackName}&wd=${encodeURIComponent(query)}`;
 
-      // Create callback function
+      // 创建回调函数
       (window as unknown as Record<string, unknown>)[callbackName] = (data: { s?: string[] }) => {
         if (data && data.s) {
           setSuggestions(data.s);
           setShowSuggestions(data.s.length > 0);
           setSelectedIndex(-1);
         }
-        // Clean up
+        // 清理资源
         document.head.removeChild(script);
         delete (window as unknown as Record<string, unknown>)[callbackName];
       };
@@ -97,25 +98,25 @@ export default function Home() {
     }
   };
 
-  // Debounced version of fetchSuggestions
+  // 防抖版本的 fetchSuggestions
   const debouncedFetchSuggestions = debounce(fetchSuggestions, 300);
 
-  // Handle input change
+  // 处理输入变化
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
     debouncedFetchSuggestions(value);
   };
 
-  // Handle suggestion click
+  // 处理建议项点击
   const handleSuggestionClick = (suggestion: string) => {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
-    // Open search in new tab using current engine
+    // 使用当前搜索引擎在新标签页中打开搜索
     window.open(`${currentEngine.url}${encodeURIComponent(suggestion)}`, "_blank");
   };
 
-  // Handle keyboard navigation
+  // 处理键盘导航
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showSuggestions) return;
 
@@ -142,7 +143,7 @@ export default function Home() {
     }
   };
 
-  // Handle form submission
+  // 处理表单提交
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -150,7 +151,7 @@ export default function Home() {
     }
   };
 
-  // Close suggestions and engine selector when clicking outside
+  // 点击外部区域时关闭建议列表和引擎选择器
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
@@ -171,7 +172,7 @@ export default function Home() {
 
   return (
     <div className="icon-s icon-home-small home h-full w-full">
-      {/* === Video Background === */}
+      {/* 视频背景 */}
       <section className="home-wallpaper h-full w-full">
         <video
           className="h-full w-full object-cover"
@@ -184,10 +185,10 @@ export default function Home() {
         <div className="mask absolute top-0 left-0 h-full w-full transition-colors" style={{ backgroundColor: "rgba(0, 0, 0, 0.03)", backdropFilter: "blur(0px)" }}></div>
       </section>
 
-      {/* === Main Content Overlay === */}
+      {/* 主要内容覆盖层 */}
       <div className="home-main absolute top-0 left-0 h-full w-full transition-transform duration-300">
         <section className="page-active absolute flex h-full w-full flex-col items-center">
-          {/* === Clock Display === */}
+          {/* 时钟显示 */}
           <div className="mt-[28.5vh] flex font-[family-name:var(--font-mind-demi-bold)] text-[130px] leading-[100px] text-[rgba(245,245,250,0.8)] max-md:text-[70px] max-md:leading-[70px]">
             <p className="flex-shrink-0 text-right">{hours}</p>
             <span>:</span>
@@ -196,14 +197,14 @@ export default function Home() {
             <p className="w-[170px] flex-shrink-0 text-left max-md:w-[90px]">{seconds}</p>
           </div>
 
-          {/* === Date Display === */}
+          {/* 日期显示 */}
           <p className="absolute top-[calc(28.5vh+128px)] font-[family-name:var(--font-mind-regular)] text-[32px] leading-[39px] text-[rgba(245,245,250,0.8)] max-md:top-[calc(28.5vh+80px)] max-md:text-[20px]">
             <span>{dateStr}&nbsp;&nbsp;</span>
             <span>{weekdayStr}</span>
           </p>
         </section>
 
-        {/* === Search Bar === */}
+        {/* 搜索栏 */}
         <section
           ref={searchBoxRef}
           className="absolute-center top-[12vh] w-[568px] max-w-[86vw] transition-opacity duration-100 focus-within:opacity-100"
@@ -214,7 +215,7 @@ export default function Home() {
             style={{ opacity: 1 }}
             onSubmit={handleSubmit}
           >
-            {/* Search Engine Icon */}
+            {/* 搜索引擎图标 */}
             <div className="flex h-full w-[52px] items-center justify-center">
               <div
                 className="flex h-[28px] w-[28px] cursor-pointer items-center justify-center rounded-[8px] bg-opacity-80 hover:bg-color-white hover:bg-opacity-80"
@@ -232,7 +233,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Search Input */}
+            {/* 搜索输入框 */}
             <input
               id="search_input"
               tabIndex={1}
@@ -249,7 +250,7 @@ export default function Home() {
                 }
               }}
             />
-            {/* Clear Button */}
+            {/* 清除按钮 */}
             {searchQuery && (
               <div className="absolute top-0 right-0 flex h-full w-[52px] items-center justify-center hi-demand" data-v-7655e2c3="">
                 <button
@@ -269,12 +270,12 @@ export default function Home() {
             )}
           </form>
 
-          {/* Search Suggestions */}
+          {/* 搜索建议列表 */}
           {showSuggestions && suggestions.length > 0 && (
             <section className="suggest-box glass-card mt-[4px] overflow-hidden border-color-white border-opacity-40 text-[14px] dark:border-opacity-10 w-full" style={{ backgroundColor: 'rgb(var(--color-m1) / 0.8)' }}>
               <div className="wrapper">
                 <ul className="list overflow-auto py-[4px]">
-                  {/* Search Engine Options */}
+                  {/* 搜索引擎选项 */}
                   {searchEngines.map((engine) => (
                     <li key={engine.id} className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} onClick={(e) => { e.stopPropagation(); window.open(`${engine.url}${encodeURIComponent(searchQuery)}`, "_blank"); }}>
                       <div className="ml-[8px] flex max-w-[60%] flex-grow items-center">
@@ -287,7 +288,7 @@ export default function Home() {
                       </div>
                     </li>
                   ))}
-                  {/* Search Suggestions */}
+                  {/* 搜索建议项 */}
                   {suggestions.map((suggestion, index) => (
                     <li
                       key={index}
@@ -310,7 +311,7 @@ export default function Home() {
             </section>
           )}
 
-          {/* Engine Selector */}
+          {/* 引擎选择器 */}
           {showEngineSelector && (
             <section className="engine-box glass-card mt-[4px] border-color-white border-opacity-40 bg-color-m1 bg-opacity-80 px-[20px] pt-[20px] pb-[24px] dark:border-opacity-10 dark:bg-opacity-70 w-full" data-v-7ac19e27="">
               <div className="wrapper text-[12px]" data-v-7ac19e27="">
