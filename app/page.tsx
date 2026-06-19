@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    setCurrentTime(new Date());
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -32,9 +33,11 @@ export default function Home() {
     return weekdays[date.getDay()];
   };
 
-  const { hours, minutes, seconds } = formatTime(currentTime);
-  const dateStr = formatDate(currentTime);
-  const weekdayStr = formatWeekday(currentTime);
+  const { hours, minutes, seconds } = currentTime
+    ? formatTime(currentTime)
+    : { hours: "--", minutes: "--", seconds: "--" };
+  const dateStr = currentTime ? formatDate(currentTime) : "";
+  const weekdayStr = currentTime ? formatWeekday(currentTime) : "";
 
   return (
     <div className="icon-s icon-home-small home h-full w-full">
