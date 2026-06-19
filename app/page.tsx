@@ -15,7 +15,7 @@ export default function Home() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [currentEngine, setCurrentEngine] = useState(searchEngines[0]);
+  const [currentEngine, setCurrentEngine] = useState(searchEngines[1]);
   const [showEngineSelector, setShowEngineSelector] = useState(false);
   const isInitialMount = useRef(true);
   const searchBoxRef = useRef<HTMLDivElement>(null);
