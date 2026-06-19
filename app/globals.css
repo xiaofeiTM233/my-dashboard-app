@@ -111,6 +111,11 @@ body {
   --tw-bg-opacity: 0.8;
 }
 
+/* Search box focus-within background opacity (Tailwind v4 compatible) */
+.search-box:focus-within {
+  background-color: rgb(var(--color-m1) / 0.8) !important;
+}
+
 .icon-home-small {
   --icon-size: 60px;
   --icon-home-radius: 16px;
