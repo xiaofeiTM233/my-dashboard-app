@@ -232,11 +232,11 @@ export default function Home() {
 
           {/* Search Suggestions */}
           {showSuggestions && suggestions.length > 0 && (
-            <section className="suggest-box glass-card mt-[4px] overflow-hidden border-color-white border-opacity-40 bg-color-m1 bg-opacity-80 text-[14px] dark:border-opacity-10 dark:bg-opacity-70 w-full" data-v-4d25fa4c="">
+            <section className="suggest-box glass-card mt-[4px] overflow-hidden border-color-white border-opacity-40 text-[14px] dark:border-opacity-10 w-full" style={{ backgroundColor: 'rgb(var(--color-m1) / 0.8)' }} data-v-4d25fa4c="">
               <div className="wrapper" data-v-4d25fa4c="">
                 <ul className="list overflow-auto py-[4px]" data-v-4d25fa4c="">
                   {/* Search Engine Options */}
-                  <li className="bg-color-white bg-opacity-80 dark:bg-opacity-20 li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" data-v-4d25fa4c="" onClick={(e) => { e.stopPropagation(); window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(searchQuery)}`, "_blank"); }}>
+                  <li className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} data-v-4d25fa4c="" onClick={(e) => { e.stopPropagation(); window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(searchQuery)}`, "_blank"); }}>
                     <div className="ml-[8px] flex max-w-[60%] flex-grow items-center" data-v-4d25fa4c="">
                       <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" data-v-4d25fa4c="" style={{ backgroundImage: 'url("https://static.wetab.link/user-custom-icon/zh/644b78ec2a77ac35cd5059c5/user-custom-icon1gv3d9j69tz2m6qofnx45jsswdt.png?imageMogr2/thumbnail/48x/format/webp/blur/1x0/quality/100|imageslim")' }}></section>
                       <span className="ml-[12px] max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap text-color-blue" data-v-4d25fa4c="">{searchQuery}</span>
@@ -246,7 +246,7 @@ export default function Home() {
                       <i className="iconfont icon-arrow_icon ml-[12px] text-[12px] text-color-blue" data-v-4d25fa4c=""></i>
                     </div>
                   </li>
-                  <li className="bg-color-white bg-opacity-80 dark:bg-opacity-20 li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" data-v-4d25fa4c="" onClick={(e) => { e.stopPropagation(); window.open(`https://www.bing.com/search?q=${encodeURIComponent(searchQuery)}`, "_blank"); }}>
+                  <li className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} data-v-4d25fa4c="" onClick={(e) => { e.stopPropagation(); window.open(`https://www.bing.com/search?q=${encodeURIComponent(searchQuery)}`, "_blank"); }}>
                     <div className="ml-[8px] flex max-w-[60%] flex-grow items-center" data-v-4d25fa4c="">
                       <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" data-v-4d25fa4c="" style={{ backgroundImage: 'url("https://static.wetab.link/user-custom-icon/zh/644b78ec2a77ac35cd5059c5/user-custom-icon1gv3da3l8ata1fr5fdeo17znucs.png?imageMogr2/thumbnail/48x/format/webp/blur/1x0/quality/100|imageslim")' }}></section>
                       <span className="ml-[12px] max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap text-color-blue" data-v-4d25fa4c="">{searchQuery}</span>

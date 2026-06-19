@@ -1,16 +1,29 @@
 @import "tailwindcss";
 
-/* === Custom Fonts (WeTab NeverMind) === */
+
 @font-face {
-  font-family: "mind-demi-bold";
-  src: url("https://static.infinitytab.com/font/NeverMind-DemiBold.ttf") format("TrueType");
-  font-display: swap;
+    font-family: "mind-bold";
+    src: url("/font/NeverMind-Bold.ttf") format("TrueType")
 }
 
 @font-face {
-  font-family: "mind-regular";
-  src: url("https://static.infinitytab.com/font/NeverMind-Regular.ttf") format("TrueType");
-  font-display: swap;
+    font-family: "mind-demi-bold";
+    src: url("/font/NeverMind-DemiBold.ttf") format("TrueType")
+}
+
+@font-face {
+    font-family: "mind-medium";
+    src: url("/font/NeverMind-Medium.ttf") format("TrueType")
+}
+
+@font-face {
+    font-family: "mind-regular";
+    src: url("/font/NeverMind-Regular.ttf") format("TrueType")
+}
+
+@font-face {
+  font-family: "iconfont";
+  src: url("/font/iconfont-3040cc0a.woff2") format("woff2"),url("/font/iconfont-82fad784.woff") format("woff"),url("/font/iconfont-217b3216.ttf") format("truetype")
 }
 
 /* === CSS Custom Properties (Light Theme - matches original) === */
@@ -70,117 +83,4 @@ html {
 body {
   margin: 0;
   padding: 0;
-}
-
-/* === Custom Utility Classes === */
-.body-root {
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Micro Hei", sans-serif;
-  font-weight: 500;
-}
-
-.absolute-center {
-  left: 50%;
-  position: absolute;
-  transform: translateX(-50%);
-}
-
-.bg-color-m1 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(var(--color-m1) / var(--tw-bg-opacity));
-}
-
-.text-color-t1 {
-  --tw-text-opacity: 1;
-  color: rgb(var(--color-t1) / var(--tw-text-opacity));
-}
-
-.border-color-white {
-  --tw-border-opacity: 1;
-  border-color: rgb(var(--color-white) / var(--tw-border-opacity));
-}
-
-.bg-opacity-60 {
-  --tw-bg-opacity: 0.6;
-}
-
-.bg-opacity-80 {
-  --tw-bg-opacity: 0.8;
-}
-
-.border-opacity-10 {
-  --tw-border-opacity: 0.1;
-}
-
-.focus-within\:bg-opacity-80:focus-within {
-  --tw-bg-opacity: 0.8;
-}
-
-/* Search box focus-within background opacity (Tailwind v4 compatible) */
-.search-box:focus-within {
-  background-color: rgb(var(--color-m1) / 0.8) !important;
-}
-
-.icon-home-small {
-  --icon-size: 60px;
-  --icon-home-radius: 16px;
-}
-
-/* Search box focus transitions */
-.search-box {
-  transition: background-color 0.1s ease, opacity 0.1s ease;
-}
-
-/* Remove default search input clear button */
-input[type="search"]::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-input[type="search"]::-ms-clear {
-  display: none;
-}
-
-/* Placeholder styling */
-input::placeholder {
-  opacity: 0.4;
-}
-
-/* Search suggestions styles */
-.suggest-box {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.suggest-box .list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.suggest-box .li {
-  transition: background-color 0.1s ease;
-}
-
-.suggest-box .li:hover {
-  background-color: rgba(0, 0, 0, 0.06);
-}
-
-.suggest-box .li.selected {
-  background-color: rgba(0, 0, 0, 0.06);
-}
-
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-  .suggest-box {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  }
-  
-  .suggest-box .li:hover,
-  .suggest-box .li.selected {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
 }
