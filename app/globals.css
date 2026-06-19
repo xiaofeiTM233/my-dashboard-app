@@ -103,6 +103,10 @@ body {
   --tw-bg-opacity: 0.6;
 }
 
+.bg-opacity-80 {
+  --tw-bg-opacity: 0.8;
+}
+
 .border-opacity-10 {
   --tw-border-opacity: 0.1;
 }

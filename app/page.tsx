@@ -1,15 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
-  const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
+    // Set initial time on first mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      setCurrentTime(new Date());
+    }
+
+    // Update time every second
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -252,7 +260,7 @@ export default function Home() {
                   {suggestions.map((suggestion, index) => (
                     <li
                       key={index}
-                      className={`mt-[8px] bg-color-m2 bg-opacity-0 li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center rounded-[8px] px-[8px] transition-colors hover:bg-opacity-[0.06] ${
+                      className={`bg-color-m2 bg-opacity-0 li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center rounded-[8px] px-[8px] transition-colors hover:bg-opacity-[0.06] ${
                         index === selectedIndex ? "bg-opacity-[0.06]" : ""
                       }`}
                       data-v-4d25fa4c=""
