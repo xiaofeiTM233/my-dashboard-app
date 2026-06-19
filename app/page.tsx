@@ -5,9 +5,9 @@ import { useState, useEffect, useRef } from "react";
 
 // 搜索引擎配置
 const searchEngines = [
-  { id: "baidu", name: "百度", icon: "/baidu.png", url: "https://www.baidu.com/s?wd=" },
-  { id: "bing", name: "必应", icon: "/bing.png", url: "https://www.bing.com/search?q=" },
-  { id: "google", name: "谷歌", icon: "/google.png", url: "https://www.google.com/search?q=" },
+  { id: "baidu", name: "百度", icon: "/baidu.png", icon2: "/baidu_2.png", url: "https://www.baidu.com/s?wd=" },
+  { id: "bing", name: "必应", icon: "/bing.png", icon2: "/bing_2.png", url: "https://www.bing.com/search?q=" },
+  { id: "google", name: "谷歌", icon: "/google.png", icon2: "/google_2.png", url: "https://www.google.com/search?q=" },
 ];
 
 export default function Home() {
@@ -279,7 +279,7 @@ export default function Home() {
                   {searchEngines.map((engine) => (
                     <li key={engine.id} className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} onClick={(e) => { e.stopPropagation(); window.open(`${engine.url}${encodeURIComponent(searchQuery)}`, "_blank"); }}>
                       <div className="ml-[8px] flex max-w-[60%] flex-grow items-center">
-                        <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" style={{ backgroundImage: `url("${engine.icon}")` }}></section>
+                        <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" style={{ backgroundImage: `url("${engine.icon2}")` }}></section>
                         <span className="ml-[12px] max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap text-color-blue">{searchQuery}</span>
                       </div>
                       <div className="text-dot mr-[12px] flex max-w-[40%] items-center">
