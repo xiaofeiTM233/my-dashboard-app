@@ -9,6 +9,7 @@ export default function Home() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const isInitialMount = useRef(true);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Set initial time on first mount
@@ -142,8 +143,10 @@ export default function Home() {
 
   // Close suggestions when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => {
-      setShowSuggestions(false);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
     };
 
     document.addEventListener("click", handleClickOutside);
@@ -192,6 +195,7 @@ export default function Home() {
 
         {/* === Search Bar === */}
         <section
+          ref={searchBoxRef}
           className="absolute-center top-[12vh] w-[568px] max-w-[86vw] transition-opacity duration-100 focus-within:opacity-100"
           style={{ width: "567.6px" }}
         >
@@ -207,7 +211,7 @@ export default function Home() {
                   className="flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]"
                   style={{
                     backgroundImage:
-                      'url("./bing.png")',
+                      'url("/bing.png")',
                   }}
                 />
               </div>
@@ -252,45 +256,44 @@ export default function Home() {
 
           {/* Search Suggestions */}
           {showSuggestions && suggestions.length > 0 && (
-            <section className="suggest-box glass-card mt-[4px] overflow-hidden border-color-white border-opacity-40 text-[14px] dark:border-opacity-10 w-full" style={{ backgroundColor: 'rgb(var(--color-m1) / 0.8)' }} data-v-4d25fa4c="">
-              <div className="wrapper" data-v-4d25fa4c="">
-                <ul className="list overflow-auto py-[4px]" data-v-4d25fa4c="">
+            <section className="suggest-box glass-card mt-[4px] overflow-hidden border-color-white border-opacity-40 text-[14px] dark:border-opacity-10 w-full" style={{ backgroundColor: 'rgb(var(--color-m1) / 0.8)' }}>
+              <div className="wrapper">
+                <ul className="list overflow-auto py-[4px]">
                   {/* Search Engine Options */}
-                  <li className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} data-v-4d25fa4c="" onClick={(e) => { e.stopPropagation(); window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(searchQuery)}`, "_blank"); }}>
-                    <div className="ml-[8px] flex max-w-[60%] flex-grow items-center" data-v-4d25fa4c="">
-                      <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" data-v-4d25fa4c="" style={{ backgroundImage: 'url("https://static.wetab.link/user-custom-icon/zh/644b78ec2a77ac35cd5059c5/user-custom-icon1gv3d9j69tz2m6qofnx45jsswdt.png?imageMogr2/thumbnail/48x/format/webp/blur/1x0/quality/100|imageslim")' }}></section>
-                      <span className="ml-[12px] max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap text-color-blue" data-v-4d25fa4c="">{searchQuery}</span>
+                  <li className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} onClick={(e) => { e.stopPropagation(); window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(searchQuery)}`, "_blank"); }}>
+                    <div className="ml-[8px] flex max-w-[60%] flex-grow items-center">
+                      <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" style={{ backgroundImage: 'url("/baidu_2.png")' }}></section>
+                      <span className="ml-[12px] max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap text-color-blue">{searchQuery}</span>
                     </div>
-                    <div className="text-dot mr-[12px] flex max-w-[40%] items-center" data-v-4d25fa4c="">
-                      <span className="text-dot text-[12px] text-color-t3" data-v-4d25fa4c="">百度</span>
-                      <i className="iconfont icon-arrow_icon ml-[12px] text-[12px] text-color-blue" data-v-4d25fa4c=""></i>
+                    <div className="text-dot mr-[12px] flex max-w-[40%] items-center">
+                      <span className="text-dot text-[12px] text-color-t3">百度</span>
+                      <i className="iconfont icon-arrow_icon ml-[12px] text-[12px] text-color-blue"></i>
                     </div>
                   </li>
-                  <li className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} data-v-4d25fa4c="" onClick={(e) => { e.stopPropagation(); window.open(`https://www.bing.com/search?q=${encodeURIComponent(searchQuery)}`, "_blank"); }}>
-                    <div className="ml-[8px] flex max-w-[60%] flex-grow items-center" data-v-4d25fa4c="">
-                      <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" data-v-4d25fa4c="" style={{ backgroundImage: 'url("https://static.wetab.link/user-custom-icon/zh/644b78ec2a77ac35cd5059c5/user-custom-icon1gv3da3l8ata1fr5fdeo17znucs.png?imageMogr2/thumbnail/48x/format/webp/blur/1x0/quality/100|imageslim")' }}></section>
-                      <span className="ml-[12px] max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap text-color-blue" data-v-4d25fa4c="">{searchQuery}</span>
+                  <li className="li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center justify-between rounded-[8px] transition-colors hover:bg-color-m2 hover:bg-opacity-[0.06] dark:hover:bg-opacity-10" style={{ backgroundColor: 'rgb(255 255 255 / 0.8)' }} onClick={(e) => { e.stopPropagation(); window.open(`https://www.bing.com/search?q=${encodeURIComponent(searchQuery)}`, "_blank"); }}>
+                    <div className="ml-[8px] flex max-w-[60%] flex-grow items-center">
+                      <section className="hi-icon flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]" style={{ backgroundImage: 'url("/bing_2.png")' }}></section>
+                      <span className="ml-[12px] max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap text-color-blue">{searchQuery}</span>
                     </div>
-                    <div className="text-dot mr-[12px] flex max-w-[40%] items-center" data-v-4d25fa4c="">
-                      <span className="text-dot text-[12px] text-color-t3" data-v-4d25fa4c="">Bing</span>
-                      <i className="iconfont icon-arrow_icon ml-[12px] text-[12px] text-color-blue" data-v-4d25fa4c=""></i>
+                    <div className="text-dot mr-[12px] flex max-w-[40%] items-center">
+                      <span className="text-dot text-[12px] text-color-t3">Bing</span>
+                      <i className="iconfont icon-arrow_icon ml-[12px] text-[12px] text-color-blue"></i>
                     </div>
                   </li>
                   {/* Search Suggestions */}
                   {suggestions.map((suggestion, index) => (
                     <li
                       key={index}
-                      className={`bg-color-m2 bg-opacity-0 li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center rounded-[8px] px-[8px] transition-colors hover:bg-opacity-[0.06] ${
-                        index === selectedIndex ? "bg-opacity-[0.06]" : ""
-                      }`}
-                      data-v-4d25fa4c=""
+                      className={`bg-color-m2 bg-opacity-0 li mx-[8px] my-[4px] flex h-[36px] cursor-pointer items-center rounded-[8px] px-[8px] transition-colors hover:bg-opacity-[0.06] ${index === selectedIndex ? "bg-opacity-[0.06]" : ""
+                        }`}
+
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSuggestionClick(suggestion);
                       }}
                     >
-                      <i className="iconfont icon-magnifier_icon mr-[16px] text-[20px] text-color-t3" data-v-4d25fa4c=""></i>
-                      <div className="max-w-[80%] overflow-hidden text-ellipsis whitespace-nowrap text-color-t2" data-v-4d25fa4c="">
+                      <i className="iconfont icon-magnifier_icon mr-[16px] text-[20px] text-color-t3"></i>
+                      <div className="max-w-[80%] overflow-hidden text-ellipsis whitespace-nowrap text-color-t2">
                         {suggestion}
                       </div>
                     </li>
