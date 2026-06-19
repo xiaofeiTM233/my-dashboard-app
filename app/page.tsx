@@ -168,6 +168,7 @@ export default function Home() {
           muted
           playsInline
         />
+        <div className="mask absolute top-0 left-0 h-full w-full transition-colors" style={{ backgroundColor: "rgba(0, 0, 0, 0.03)", backdropFilter: "blur(0px)" }}></div>
       </section>
 
       {/* === Main Content Overlay === */}
@@ -195,18 +196,18 @@ export default function Home() {
           style={{ width: "567.6px" }}
         >
           <form
-            className="border-opacity-10 bg-opacity-60 search-box flex h-[52px] items-center rounded-[12px] border-[1px] border-solid border-color-white bg-color-m1 transition-colors duration-100 focus-within:bg-opacity-80 focus-within:!opacity-100 dark:focus-within:bg-opacity-70 w-full"
+            className="relative border-opacity-10 bg-opacity-60 search-box flex h-[52px] items-center rounded-[12px] border-[1px] border-solid border-color-white bg-color-m1 transition-colors duration-100 focus-within:bg-opacity-80 focus-within:!opacity-100 dark:focus-within:bg-opacity-70 w-full"
             style={{ opacity: 1 }}
             onSubmit={handleSubmit}
           >
             {/* Search Engine Icon */}
             <div className="flex h-full w-[52px] items-center justify-center">
-              <div className="flex h-[28px] w-[28px] cursor-pointer items-center justify-center rounded-[8px] bg-opacity-80 hover:bg-white/80">
+              <div className="flex h-[28px] w-[28px] cursor-pointer items-center justify-center rounded-[8px] bg-opacity-80 hover:bg-color-white hover:bg-opacity-80">
                 <section
                   className="flex items-center justify-center overflow-hidden bg-cover h-[24px] w-[24px] rounded-[6px]"
                   style={{
                     backgroundImage:
-                      'url("https://static.wetab.link/user-custom-icon/zh/644b78ec2a77ac35cd5059c5/user-custom-icon1isknn3l5l3vhd0tb59123a90bv.png?imageMogr2/thumbnail/48x/format/webp/blur/1x0/quality/100|imageslim")',
+                      'url("./bing.png")',
                   }}
                 />
               </div>
@@ -214,8 +215,9 @@ export default function Home() {
 
             {/* Search Input */}
             <input
+              id="search_input"
               tabIndex={1}
-              className="h-full grow bg-transparent py-[12px] pl-[4px] pr-[42px] text-[16px] text-color-t1 placeholder:text-color-t1 placeholder:opacity-40 outline-none"
+              className="h-full grow bg-[transparent] py-[12px] pl-[4px] pr-[42px] text-[16px] text-color-t1 placeholder:text-color-t1 placeholder:text-opacity-40"
               type="search"
               placeholder="输入搜索内容"
               autoComplete="off"
@@ -228,6 +230,24 @@ export default function Home() {
                 }
               }}
             />
+            {/* Clear Button */}
+            {searchQuery && (
+              <div className="absolute top-0 right-0 flex h-full w-[52px] items-center justify-center hi-demand" data-v-7655e2c3="">
+                <button
+                  tabIndex={-1}
+                  type="button"
+                  className="h-[32px] w-[32px]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSearchQuery("");
+                    setShowSuggestions(false);
+                    setSuggestions([]);
+                  }}
+                >
+                  <i className="iconfont icon-clear_merge_icon text-[16px] text-color-t2 duration-150"></i>
+                </button>
+              </div>
+            )}
           </form>
 
           {/* Search Suggestions */}
