@@ -13,6 +13,7 @@ import {
 import DraggableWidget from "@/components/grid/DraggableWidget";
 import GridCell from "@/components/grid/GridCell";
 import { blankCardPreset } from "@/components/grid/presets/BlankCard";
+import { hotListPresets } from "@/components/grid/presets/HotListCard";
 import {
   GRID_COLUMNS,
   GRID_ROWS,
@@ -32,8 +33,14 @@ interface GridDashboardProps {
  * - 编辑模式下支持卡片在网格内的自由拖拽与放置。
  */
 export default function GridDashboard({ editing }: GridDashboardProps) {
-  // 卡片实例列表。默认包含一个 1x1 空白预设卡片示例。
+  // 卡片实例列表。
+  // 默认展示三个热搜卡片示例（2x3 列表 / 2x2 卡片 / 3x3 列表），
+  // 同时保留一个 1x1 空白预设卡片示例。
   const [instances, setInstances] = useState<WidgetInstance[]>(() => [
+    ...hotListPresets.map((preset, index) => ({
+      ...preset,
+      instanceId: `${preset.id}-${index}`,
+    })),
     {
       ...blankCardPreset,
       instanceId: `${blankCardPreset.id}-0`,
