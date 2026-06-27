@@ -7,7 +7,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  closestCenter,
+  pointerWithin,
   type DragEndEvent,
 } from "@dnd-kit/core";
 import DraggableWidget from "@/components/grid/DraggableWidget";
@@ -53,30 +53,34 @@ export default function GridDashboard({ editing }: GridDashboardProps) {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over) return;
 
-    // 放置目标是网格单元格（id 形如 `cell-{col}-{row}`）
+    // 用碰撞检测算出的 over 就是「鼠标松手时所在的 cell」，
+    // 它同时驱动放置提示（isOver）和最终落点 —— 单一数据源，所见即所得。
+    if (!over) return;
     const overId = String(over.id);
     if (!overId.startsWith("cell-")) return;
 
     const [, colStr, rowStr] = overId.split("-");
-    const col = Number(colStr);
-    const row = Number(rowStr);
+    const targetCol = Number(colStr);
+    const targetRow = Number(rowStr);
 
     setInstances((prev) =>
-      prev.map((inst) =>
-        inst.instanceId === String(active.id)
-          ? {
-              ...inst,
-              position: {
-                ...inst.position,
-                // 以放置单元格为左上角，保持原有跨度
-                col,
-                row,
-              },
-            }
-          : inst
-      )
+      prev.map((inst) => {
+        if (inst.instanceId !== String(active.id)) return inst;
+        // 卡片左上角吸附到鼠标所在格，并 clamp 到可用区
+        const minCol = GRID_PADDING_COLUMNS;
+        const maxCol = GRID_COLUMNS - GRID_PADDING_COLUMNS - inst.position.span;
+        const minRow = 0;
+        const maxRow = GRID_ROWS - inst.position.rowSpan;
+        return {
+          ...inst,
+          position: {
+            ...inst.position,
+            col: Math.max(minCol, Math.min(maxCol, targetCol)),
+            row: Math.max(minRow, Math.min(maxRow, targetRow)),
+          },
+        };
+      })
     );
   };
 
@@ -98,7 +102,7 @@ export default function GridDashboard({ editing }: GridDashboardProps) {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={pointerWithin}
       onDragEnd={handleDragEnd}
     >
       <div

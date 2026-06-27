@@ -28,6 +28,7 @@ export default function GridCell({ col, row, editing }: GridCellProps) {
   return (
     <div
       ref={setNodeRef}
+      data-cell="1"
       style={{
         gridColumnStart: col + 1,
         gridColumnEnd: "span 1",
