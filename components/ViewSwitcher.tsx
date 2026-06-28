@@ -17,8 +17,9 @@ interface ViewSwitcherProps {
 
 /**
  * 右下角浮动按钮组（方形）。
- * - 极简视图：展示「切换到卡片视图」按钮。
- * - 卡片视图：展示「编辑/完成」与「切换到极简视图」按钮。
+ * - 默认全部展开，不折叠。
+ * - 卡片视图：上方「编辑/完成」，最下方「切换到极简视图」。
+ * - 极简视图：仅「切换到卡片视图」。
  */
 export default function ViewSwitcher({
   view,
@@ -29,26 +30,21 @@ export default function ViewSwitcher({
   return (
     <FloatButton.Group
       shape="square"
-      trigger="click"
-      placement="top"
-      style={{ insetInlineEnd: 24, insetBlockEnd: 24 }}
-      icon={<AppstoreOutlined />}
+      style={{ right: 24, bottom: 24 }}
     >
-      <FloatButton
-        shape="square"
-        icon={view === "minimal" ? <AppstoreOutlined /> : <StopOutlined />}
-        onClick={() =>
-          onViewChange(view === "minimal" ? "card" : "minimal")
-        }
-      />
-      {/* 编辑按钮仅在卡片视图下显示：极简视图没有网格可编辑 */}
+      {/* 编辑按钮在上方，仅在卡片视图下显示 */}
       {view === "card" && (
         <FloatButton
-          shape="square"
+          type={editing ? "primary" : "default"}
           icon={editing ? <CheckOutlined /> : <EditOutlined />}
           onClick={onEditToggle}
         />
       )}
+      {/* 切换模式按钮在最下方 */}
+      <FloatButton
+        icon={view === "minimal" ? <AppstoreOutlined /> : <StopOutlined />}
+        onClick={() => onViewChange(view === "minimal" ? "card" : "minimal")}
+      />
     </FloatButton.Group>
   );
 }

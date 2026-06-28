@@ -1,7 +1,7 @@
 // components/grid/GridDashboard.tsx
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -12,14 +12,7 @@ import {
 } from "@dnd-kit/core";
 import DraggableWidget from "@/components/grid/DraggableWidget";
 import GridCell from "@/components/grid/GridCell";
-import { blankCardPreset } from "@/components/grid/presets/BlankCard";
-import { hotListPresets } from "@/components/grid/presets/HotListCard";
-import {
-  GRID_COLUMNS,
-  GRID_ROWS,
-  GRID_PADDING_COLUMNS,
-  type WidgetInstance,
-} from "@/components/grid/types";
+import { GRID_COLUMNS, GRID_ROWS, GRID_PADDING_COLUMNS, useLayoutStore } from "@/components/grid/grid";
 
 interface GridDashboardProps {
   /** 是否处于编辑模式（由外部浮动按钮控制） */
@@ -34,18 +27,9 @@ interface GridDashboardProps {
  */
 export default function GridDashboard({ editing }: GridDashboardProps) {
   // 卡片实例列表。
-  // 默认展示三个热搜卡片示例（2x3 列表 / 2x2 卡片 / 3x3 列表），
-  // 同时保留一个 1x1 空白预设卡片示例。
-  const [instances, setInstances] = useState<WidgetInstance[]>(() => [
-    ...hotListPresets.map((preset, index) => ({
-      ...preset,
-      instanceId: `${preset.id}-${index}`,
-    })),
-    {
-      ...blankCardPreset,
-      instanceId: `${blankCardPreset.id}-0`,
-    },
-  ]);
+  // 通过 useLayoutStore 持久化到 localStorage：拖动位置刷新后仍保留。
+  // component 不可序列化，只存 instanceId + position，加载时按预设 id 关联回来。
+  const { instances, setInstances, saveLayout } = useLayoutStore();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -64,8 +48,8 @@ export default function GridDashboard({ editing }: GridDashboardProps) {
     const targetCol = Number(colStr);
     const targetRow = Number(rowStr);
 
-    setInstances((prev) =>
-      prev.map((inst) => {
+    setInstances((prev) => {
+      const next = prev.map((inst) => {
         if (inst.instanceId !== String(active.id)) return inst;
         // 卡片左上角吸附到鼠标所在格，并 clamp 到可用区
         const minCol = GRID_PADDING_COLUMNS;
@@ -80,8 +64,11 @@ export default function GridDashboard({ editing }: GridDashboardProps) {
             row: Math.max(minRow, Math.min(maxRow, targetRow)),
           },
         };
-      })
-    );
+      });
+      // 落点确定后写入 localStorage，刷新仍保留
+      saveLayout(next);
+      return next;
+    });
   };
 
   // 空白单元格：除去左右预留列后的可用区域

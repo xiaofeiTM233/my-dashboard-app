@@ -5,7 +5,7 @@ import { FireOutlined, RightOutlined } from "@ant-design/icons";
 import HotList from "@/components/hotlist/HotList";
 import { mockHotItems } from "@/components/hotlist/mockData";
 import type { HotIndicator, HotSize, HotVariant } from "@/components/hotlist/types";
-import type { WidgetPreset } from "@/components/grid/types";
+import type { WidgetPreset } from "@/components/grid/grid";
 
 /**
  * 热搜卡片预设的渲染入参。

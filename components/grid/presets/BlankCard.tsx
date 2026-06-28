@@ -2,7 +2,7 @@
 "use client";
 
 import { PlusOutlined } from "@ant-design/icons";
-import type { WidgetPreset } from "@/components/grid/types";
+import type { WidgetPreset } from "@/components/grid/grid";
 
 /**
  * 空白卡片内容：1x1 正方形占位，作为预设卡片示例。
