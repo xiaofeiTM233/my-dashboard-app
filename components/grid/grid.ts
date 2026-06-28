@@ -54,8 +54,8 @@ export interface WidgetInstance extends WidgetPreset {
 
 // ==================== 预设注册表 ====================
 
-import { blankCardPreset } from "@/components/grid/presets/BlankCard";
-import { hotListPresets } from "@/components/grid/presets/HotListCard";
+import { blankCardPreset } from "@/components/cards/BlankCard";
+import { hotListPresets } from "@/components/cards/HotListCard";
 
 /**
  * 预设注册表。

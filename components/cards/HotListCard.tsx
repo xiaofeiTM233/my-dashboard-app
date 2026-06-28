@@ -1,4 +1,4 @@
-// components/grid/presets/HotListCard.tsx
+// components/cards/HotListCard.tsx
 "use client";
 
 import { FireOutlined, RightOutlined } from "@ant-design/icons";
