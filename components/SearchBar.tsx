@@ -1,6 +1,7 @@
+// components/SearchBar.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type CSSProperties } from "react";
 
 // 搜索引擎配置
 const searchEngines = [
@@ -18,7 +19,12 @@ function debounce<T extends (...args: never[]) => unknown>(func: T, delay: numbe
   };
 }
 
-export default function SearchBar() {
+interface SearchBarProps {
+  className?: string;
+  style?: CSSProperties;
+}
+
+export default function SearchBar({ className, style }: SearchBarProps = {}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -121,8 +127,11 @@ export default function SearchBar() {
   return (
     <section
       ref={searchBoxRef}
-      className="absolute-center top-[12vh] w-[568px] max-w-[86vw] transition-opacity duration-100 focus-within:opacity-100"
-      style={{ width: "567.6px" }}
+      className={
+        className ??
+        "absolute-center top-[12vh] w-[568px] max-w-[86vw] transition-opacity duration-100 focus-within:opacity-100"
+      }
+      style={style ?? { width: "567.6px" }}
     >
       <form
         className="relative border-opacity-10 bg-opacity-60 search-box flex h-[52px] items-center rounded-[12px] border-[1px] border-solid border-color-white bg-color-m1 transition-colors duration-100 focus-within:bg-opacity-80 focus-within:!opacity-100 dark:focus-within:bg-opacity-70 w-full"
