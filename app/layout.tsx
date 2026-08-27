@@ -1,7 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
-import "./wetab.css";
+import "./mytab.css";
 import { LayoutProvider } from "@/components/grid/grid";
 
 export const metadata: Metadata = {

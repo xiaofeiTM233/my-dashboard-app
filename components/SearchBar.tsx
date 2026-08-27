@@ -154,6 +154,7 @@ export default function SearchBar() {
           tabIndex={1}
           className="h-full grow bg-[transparent] py-[12px] pl-[4px] pr-[42px] text-[16px] text-color-t1 placeholder:text-color-t1 placeholder:text-opacity-40"
           type="search"
+          style={{ outline: "none" }}
           placeholder="输入搜索内容"
           autoComplete="off"
           value={searchQuery}
