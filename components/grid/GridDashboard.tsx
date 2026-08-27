@@ -38,6 +38,27 @@ export default function GridDashboard({ editing }: GridDashboardProps) {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
+    console.log('DragEnd event:', { activeId: String(active.id), overId: over ? String(over.id) : null });
+
+    // 检查是否拖动到删除区域（右下角）
+    if (over) {
+      const overId = String(over.id);
+      // 检查是否在右下角的删除区域（最后2列，最后2行）
+      const col = Number(overId.split('-')[1]);
+      const row = Number(overId.split('-')[2]);
+      const isDeleteZone = col >= GRID_COLUMNS - 2 && row >= GRID_ROWS - 2;
+
+      if (isDeleteZone) {
+        console.log('Dragging to delete zone');
+        setInstances((prev) => {
+          const next = prev.filter((inst) => inst.instanceId !== String(active.id));
+          saveLayout(next);
+          return next;
+        });
+        return;
+      }
+    }
+
     // 用碰撞检测算出的 over 就是「鼠标松手时所在的 cell」，
     // 它同时驱动放置提示（isOver）和最终落点 —— 单一数据源，所见即所得。
     if (!over) return;
@@ -86,6 +107,24 @@ export default function GridDashboard({ editing }: GridDashboardProps) {
     return result;
   }, []);
 
+  // 删除区域：位于网格右下角
+  const deleteZone = editing && (
+    <div
+      id="delete-zone"
+      className="relative"
+      style={{
+        gridColumnStart: GRID_COLUMNS - 1,
+        gridColumnEnd: `span 2`,
+        gridRowStart: GRID_ROWS - 1,
+        gridRowEnd: `span 2`,
+      }}
+    >
+      <div className="flex h-full w-full items-center justify-center rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 text-red-400">
+        <span className="text-sm font-medium">拖到这里删除</span>
+      </div>
+    </div>
+  );
+
   return (
     <DndContext
       sensors={sensors}
@@ -106,6 +145,8 @@ export default function GridDashboard({ editing }: GridDashboardProps) {
         {cells.map(({ col, row }) => (
           <GridCell key={`cell-${col}-${row}`} col={col} row={row} editing={editing} />
         ))}
+
+        {deleteZone}
 
         {instances.map((instance) => (
           <DraggableWidget

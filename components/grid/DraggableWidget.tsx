@@ -21,6 +21,11 @@ export default function DraggableWidget({
 }: DraggableWidgetProps) {
   const { instanceId, position, component: Content } = instance;
 
+  // 确保 position 存在，避免 undefined 错误
+  if (!position) {
+    return null;
+  }
+
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: instanceId,

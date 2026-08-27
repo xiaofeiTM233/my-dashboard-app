@@ -1,7 +1,15 @@
-// components/grid/grid.ts
+// components/grid/grid.tsx
 "use client";
 
-import { useCallback, useState } from "react";
+import {
+  useCallback,
+  useState,
+  useEffect,
+  useRef,
+  createContext,
+  useContext,
+  type ReactNode,
+} from "react";
 import type { ComponentType } from "react";
 
 // ==================== 类型定义 ====================
@@ -146,28 +154,32 @@ function readEntries(): LayoutEntry[] | null {
 }
 
 /**
- * 网格布局持久化 hook。
- * - 初始值优先用 localStorage 中保存的布局，否则用默认布局。
- * - 通过返回的 saveLayout 在拖动结束后写入。
+ * 布局状态上下文。
  *
- * 由于 component 不可序列化，只持久化 instanceId + position；
- * 组件在 hydrate 阶段按预设 id 重新关联。
+ * 之前 Home 与 GridDashboard 各自调用 useLayoutStore()，会各自持有独立的
+ * state 副本。拖动只在 GridDashboard 的副本里更新并写入 localStorage，
+ * 而 Home 副本的「自动保存」effect 又会用旧数据覆盖回去，导致移动后保存失效。
+ *
+ * 改用 Context 后，所有组件共享同一份 state，从根本上避免双副本互相覆盖。
  */
-export function useLayoutStore() {
-  // 初始用默认布局，避免 SSR/首屏不一致；挂载后再用 localStorage 覆盖
+interface LayoutContextValue {
+  instances: WidgetInstance[];
+  setInstances: React.Dispatch<React.SetStateAction<WidgetInstance[]>>;
+  saveLayout: (next: WidgetInstance[]) => void;
+}
+
+const LayoutContext = createContext<LayoutContextValue | null>(null);
+
+/**
+ * 提供者：持有唯一一份布局状态。
+ * - 初始用默认布局，挂载后再用 localStorage 覆盖。
+ * - instances 变化后自动写入 localStorage（只此一处，避免重复保存/互相覆盖）。
+ */
+export function LayoutProvider({ children }: { children: ReactNode }) {
   const [instances, setInstances] = useState<WidgetInstance[]>(() =>
     buildDefaultInstances()
   );
 
-  // 挂载后读取 localStorage，覆盖默认布局
-  useState(() => {
-    const entries = readEntries();
-    if (entries) {
-      setInstances(hydrate(entries));
-    }
-  });
-
-  /** 把当前布局写入 localStorage */
   const saveLayout = useCallback((next: WidgetInstance[]) => {
     if (typeof window === "undefined") return;
     const entries: LayoutEntry[] = next.map((inst) => ({
@@ -176,10 +188,43 @@ export function useLayoutStore() {
     }));
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      console.log("Saved instances to localStorage:", next);
     } catch {
       // 配额满或禁用时静默忽略
     }
   }, []);
 
-  return { instances, setInstances, saveLayout };
+  // 挂载后从 localStorage 加载已保存布局
+  useEffect(() => {
+    const entries = readEntries();
+    if (entries && entries.length > 0) {
+      const hydrated = hydrate(entries);
+      console.log("Loaded instances from localStorage:", hydrated);
+      setInstances(hydrated);
+    } else {
+      console.log("No localStorage data found, using default instances");
+    }
+  }, []);
+
+  // 唯一一处自动保存：instances 变化即写回
+  useEffect(() => {
+    saveLayout(instances);
+  }, [instances, saveLayout]);
+
+  return (
+    <LayoutContext.Provider value={{ instances, setInstances, saveLayout }}>
+      {children}
+    </LayoutContext.Provider>
+  );
+}
+
+/**
+ * 读取共享布局状态。必须在 <LayoutProvider> 内使用。
+ */
+export function useLayoutStore(): LayoutContextValue {
+  const ctx = useContext(LayoutContext);
+  if (!ctx) {
+    throw new Error("useLayoutStore 必须在 <LayoutProvider> 内使用");
+  }
+  return ctx;
 }
