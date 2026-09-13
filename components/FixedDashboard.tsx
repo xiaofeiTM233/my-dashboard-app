@@ -3,6 +3,7 @@
 
 import HotList from "@/components/HotList";
 import SearchBar from "@/components/SearchBar";
+import TodoList from "@/components/TodoList";
 import WidgetCard from "@/components/WidgetCard";
 
 interface PlaceholderCardProps {
@@ -33,9 +34,9 @@ export default function FixedDashboard() {
           gridTemplateRows: "1fr 1fr 1fr",
         }}
       >
-        {/* 左上：跨第 1-2 行的高卡片 */}
-        <div className="min-h-0" style={{ gridColumn: 1, gridRow: "1 / 3" }}>
-          <PlaceholderCard label="左侧卡片" />
+        {/* 左上：跨第 1-2 行，滴答清单本周任务 */}
+        <div className="min-h-0 min-w-0" style={{ gridColumn: 1, gridRow: "1 / 3" }}>
+          <TodoList />
         </div>
 
         {/* 中上：搜索栏（建议为绝对定位浮层，不影响居中） */}
