@@ -15,6 +15,7 @@ import {
 } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import WidgetCard from "@/components/WidgetCard";
+import { useListStyles } from "@/lib/useListStyles";
 
 interface TodoTask {
   id: string;
@@ -102,6 +103,7 @@ function TodoListInner({
   days = 7,
   refreshInterval = 5 * 60 * 1000,
 }: TodoListProps) {
+  useListStyles();
   const { message } = App.useApp();
   const [payload, setPayload] = useState<TodoListPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -124,6 +126,7 @@ function TodoListInner({
 
   const requestIdRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
+  const collapsedInitRef = useRef(false);
 
   const load = useCallback(
     async (force = false) => {
@@ -151,6 +154,14 @@ function TodoListInner({
         }
         setPayload(json.data);
         setRefreshedAt(new Date());
+        if (!collapsedInitRef.current) {
+          collapsedInitRef.current = true;
+          const nextCollapsed: Record<string, boolean> = {};
+          for (const g of json.data.groups) {
+            nextCollapsed[g.key] = g.title !== "今天";
+          }
+          setCollapsed(nextCollapsed);
+        }
       } catch (err) {
         if (requestId !== requestIdRef.current) return;
         if (err instanceof DOMException && err.name === "AbortError") return;
@@ -298,13 +309,10 @@ function TodoListInner({
         contentClassName="flex h-full w-full min-w-0 flex-col overflow-hidden"
       >
         {/* 列表 */}
-        <div
-          className="hot-list-scroll"
-          style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingTop: 4 }}
-        >
+        <div className="dx-scroll dx-list-body">
           {error && !payload ? (
             <Alert
-              style={{ margin: 12 }}
+              className="dx-pad-sm"
               type="error"
               showIcon
               title={error}
@@ -315,14 +323,14 @@ function TodoListInner({
               }
             />
           ) : loading && !payload ? (
-            <div style={{ padding: 16 }}>
+            <div className="dx-pad-md">
               <Skeleton active title={false} paragraph={{ rows: 10 }} />
             </div>
           ) : (payload?.groups.length ?? 0) === 0 ? (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description="最近没有任务"
-              style={{ padding: 24 }}
+              className="dx-pad-lg"
             />
           ) : (
             (payload?.groups ?? []).map((group) => {
@@ -331,52 +339,21 @@ function TodoListInner({
                 <section key={group.key}>
                   <button
                     type="button"
+                    className="dx-group-btn"
                     onClick={() => toggleCollapse(group.key)}
-                    style={{
-                      width: "100%",
-                      margin: 0,
-                      border: "none",
-                      background: "transparent",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      padding: "8px 14px 4px",
-                      textAlign: "left",
-                    }}
                   >
                     <span
                       aria-hidden
-                      style={{
-                        display: "inline-block",
-                        width: 0,
-                        height: 0,
-                        flexShrink: 0,
-                        borderLeft: "5px solid rgba(0, 0, 0, 0.45)",
-                        borderTop: "4px solid transparent",
-                        borderBottom: "4px solid transparent",
-                        transform: isCollapsed ? "none" : "rotate(90deg)",
-                        transition: "transform 0.15s",
-                      }}
+                      className={`dx-caret${isCollapsed ? "" : " is-open"}`}
                     />
                     {group.key === "pinned" && (
                       <span style={{ fontSize: 12 }}>📌</span>
                     )}
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>
-                      {group.title}
-                    </span>
+                    <span className="dx-group-title">{group.title}</span>
                     {group.subtitle && (
-                      <span
-                        style={{ fontSize: 13, color: "rgba(0,0,0,0.45)" }}
-                      >
-                        {group.subtitle}
-                      </span>
+                      <span className="dx-group-sub">{group.subtitle}</span>
                     )}
-                    <span
-                      style={{ fontSize: 12, color: "rgba(0,0,0,0.35)" }}
-                    >
-                      {group.count}
-                    </span>
+                    <span className="dx-group-count">{group.count}</span>
                   </button>
 
                   {!isCollapsed &&
@@ -397,26 +374,9 @@ function TodoListInner({
         </div>
 
         {payload && (
-          <div
-            style={{
-              padding: "6px 8px 6px 14px",
-              borderTop: "1px solid rgba(255, 255, 255, 0.4)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
-              fontSize: 11,
-              color: "rgba(0,0,0,0.45)",
-            }}
-          >
+          <div className="dx-foot">
             <span>共 {payload.total} 条</span>
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
+            <span className="dx-foot-actions">
               {refreshedAt && <span>{formatRefreshTime(refreshedAt)}</span>}
               <Tooltip title="刷新">
                 <Button
@@ -442,24 +402,12 @@ function TodoListInner({
               ref={popupRef}
               role="dialog"
               aria-label="任务详情"
+              className="dx-popup dx-scroll"
               onMouseDown={(e) => e.stopPropagation()}
               style={{
-                position: "fixed",
                 top: popupPos.top,
                 left: popupPos.left,
-                width: 360,
-                maxHeight: "min(70vh, 520px)",
-                overflowY: "auto",
-                zIndex: 1000,
-                borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.55)",
-                background: "rgba(255,255,255,0.92)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                boxShadow: "0 8px 28px rgba(0,0,0,0.14)",
-                padding: "14px 16px",
               }}
-              className="hot-list-scroll"
             >
               {detailLoading ? (
                 <Skeleton active paragraph={{ rows: 4 }} />
@@ -467,16 +415,10 @@ function TodoListInner({
                 <Alert type="error" showIcon title={detailError} />
               ) : detail ? (
                 <div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 10,
-                      marginBottom: 12,
-                    }}
-                  >
+                  <div className="dx-popup-head">
                     <button
                       type="button"
+                      className="dx-check-lg"
                       aria-label={
                         detail.status === 2 ? "标记未完成" : "标记完成"
                       }
@@ -485,45 +427,16 @@ function TodoListInner({
                         closeDetail();
                       }}
                       style={{
-                        width: 18,
-                        height: 18,
-                        marginTop: 3,
-                        flexShrink: 0,
-                        borderRadius: 4,
-                        border: `1.5px solid ${CHECK_BORDER[detail.priority] ?? CHECK_BORDER[0]}`,
-                        background: "transparent",
-                        cursor: "pointer",
-                        padding: 0,
+                        borderColor:
+                          CHECK_BORDER[detail.priority] ?? CHECK_BORDER[0],
                       }}
                     />
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div
-                        style={{
-                          fontSize: 15,
-                          fontWeight: 600,
-                          lineHeight: "22px",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {detail.title}
-                      </div>
-                      <div
-                        style={{
-                          marginTop: 8,
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: 6,
-                          alignItems: "center",
-                        }}
-                      >
+                    <div className="dx-popup-body">
+                      <div className="dx-popup-title">{detail.title}</div>
+                      <div className="dx-popup-meta">
                         <span
-                          style={{
-                            display: "inline-block",
-                            width: 8,
-                            height: 8,
-                            borderRadius: "50%",
-                            background: detail.projectColor,
-                          }}
+                          className="dx-popup-dot"
+                          style={{ background: detail.projectColor }}
                         />
                         <span
                           style={{ fontSize: 13, color: "rgba(0,0,0,0.55)" }}
@@ -553,25 +466,12 @@ function TodoListInner({
                         {detail.repeatFlag && <Tag color="purple">重复</Tag>}
                       </div>
                       {detail.tags.length > 0 && (
-                        <div
-                          style={{
-                            marginTop: 8,
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 6,
-                          }}
-                        >
+                        <div className="dx-popup-tags">
                           {detail.tags.map((tag) => (
                             <span
                               key={tag}
-                              style={{
-                                fontSize: 12,
-                                lineHeight: "18px",
-                                padding: "0 8px",
-                                borderRadius: 4,
-                                color: "#fff",
-                                background: tagColor(tag),
-                              }}
+                              className="dx-tag"
+                              style={{ background: tagColor(tag) }}
                             >
                               {tag}
                             </span>
@@ -582,19 +482,7 @@ function TodoListInner({
                   </div>
 
                   {(detail.content || detail.desc) && (
-                    <div
-                      style={{
-                        borderTop: "1px solid rgba(0,0,0,0.06)",
-                        paddingTop: 12,
-                        fontSize: 13,
-                        lineHeight: 1.6,
-                        color: "rgba(0,0,0,0.75)",
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                        maxHeight: 200,
-                        overflowY: "auto",
-                      }}
-                    >
+                    <div className="dx-popup-content">
                       {detail.content || detail.desc}
                     </div>
                   )}
@@ -668,37 +556,18 @@ function TaskRow({
 
   return (
     <div
-      className="todo-row"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        padding: "6px 14px 6px 10px",
-        borderLeft: `3px solid ${task.projectColor}`,
-        minHeight: 32,
-      }}
+      className="dx-list-row"
+      style={{ borderLeft: `3px solid ${task.projectColor}` }}
     >
       <button
         type="button"
+        className={`dx-check${isChecked ? " is-checked" : ""}`}
         aria-label={isChecked ? "标记未完成" : "标记完成"}
         disabled={busy}
         onClick={onToggle}
         style={{
-          width: 16,
-          height: 16,
-          flexShrink: 0,
-          borderRadius: 4,
-          border: `1.5px solid ${isChecked ? border : border}`,
+          borderColor: border,
           background: isChecked ? border : "transparent",
-          cursor: busy ? "wait" : "pointer",
-          padding: 0,
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#fff",
-          fontSize: 11,
-          lineHeight: 1,
-          transition: "background-color 0.15s",
         }}
       >
         {isChecked ? "✓" : ""}
@@ -706,20 +575,9 @@ function TaskRow({
 
       <div
         data-todo-row-title
+        className={`dx-task-title${isChecked ? " is-done" : ""}`}
         onClick={(e) => onOpen(e.currentTarget.getBoundingClientRect())}
         title={task.title}
-        style={{
-          flex: 1,
-          minWidth: 0,
-          fontSize: 14,
-          lineHeight: "20px",
-          color: isChecked ? "rgba(0,0,0,0.35)" : "rgba(0,0,0,0.88)",
-          textDecoration: isChecked ? "line-through" : "none",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          cursor: "pointer",
-        }}
       >
         {task.hasSub && (
           <span
@@ -737,29 +595,12 @@ function TaskRow({
         {task.title}
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          flexShrink: 0,
-          gap: 4,
-          maxWidth: "52%",
-          overflow: "hidden",
-        }}
-      >
+      <div className="dx-task-meta">
         {task.tags.slice(0, 2).map((tag) => (
           <span
             key={tag}
-            style={{
-              fontSize: 11,
-              lineHeight: "16px",
-              padding: "0 6px",
-              borderRadius: 4,
-              color: "#fff",
-              background: tagColor(tag),
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-            }}
+            className="dx-tag"
+            style={{ background: tagColor(tag) }}
           >
             {tag}
           </span>
@@ -775,32 +616,17 @@ function TaskRow({
             +{task.tags.length - 2}
           </span>
         )}
-        <span
-          style={{
-            fontSize: 12,
-            color: "rgba(0,0,0,0.4)",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            minWidth: 0,
-          }}
-        >
-          {task.projectName}
-        </span>
+        <span className="dx-meta-text">{task.projectName}</span>
         {task.hasReminder && (
-          <span
-            aria-hidden
-            style={{ fontSize: 11, opacity: 0.45, flexShrink: 0 }}
-          >
+          <span aria-hidden style={{ fontSize: 11, opacity: 0.45, flexShrink: 0 }}>
             🔔
           </span>
         )}
         {(task.dueDate || task.startDate) && (
           <span
+            className="dx-meta-text"
             style={{
-              fontSize: 12,
               color: timeColor,
-              whiteSpace: "nowrap",
               fontWeight: task.overdue ? 600 : 400,
               flexShrink: 0,
             }}

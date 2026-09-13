@@ -6,7 +6,6 @@ import {
   Button,
   ConfigProvider,
   Empty,
-  Flex,
   Skeleton,
   Tooltip,
   Typography,
@@ -18,6 +17,7 @@ import {
   HOT_TAB_SOURCES,
   isHotTabSourceId,
 } from "@/lib/hotSources";
+import { useListStyles } from "@/lib/useListStyles";
 
 interface HotItem {
   id: string;
@@ -63,6 +63,7 @@ export default function HotList({
   limit = 30,
   refreshInterval = 10 * 60 * 1000,
 }: HotListProps) {
+  useListStyles();
   const [sourceId, setSourceId] = useState(() =>
     isHotTabSourceId(defaultSource) ? defaultSource : DEFAULT_HOT_SOURCE,
   );
@@ -146,58 +147,23 @@ export default function HotList({
         contentClassName="flex h-full w-full min-w-0 flex-col overflow-hidden"
       >
         {/* 头部：Tab 切换平台 */}
-        <div
-          style={{
-            padding: "10px 12px 0",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.4)",
-          }}
-        >
+        <div className="dx-head">
           <div
-            className="hot-list-tabs"
+            className="dx-scroll-x-none"
             role="tablist"
             aria-label="热榜平台"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              minWidth: 0,
-              paddingBottom: 8,
-              overflowX: "auto",
-            }}
           >
             {HOT_TAB_SOURCES.map((item, index) => {
               const active = item.id === sourceId;
               return (
                 <Fragment key={item.id}>
-                  {index > 0 && (
-                    <span
-                      aria-hidden
-                      style={{
-                        width: 1,
-                        height: 10,
-                        flexShrink: 0,
-                        margin: "0 2px",
-                        background: "rgba(0, 0, 0, 0.15)",
-                      }}
-                    />
-                  )}
+                  {index > 0 && <span aria-hidden className="dx-tab-sep" />}
                   <button
                     type="button"
                     role="tab"
                     aria-selected={active}
+                    className={`dx-tab${active ? " is-active" : ""}`}
                     onClick={() => handleSelect(item.id)}
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      cursor: "pointer",
-                      flexShrink: 0,
-                      padding: "2px 8px",
-                      fontSize: 12,
-                      lineHeight: "20px",
-                      whiteSpace: "nowrap",
-                      color: active ? "#4A7AFF" : "rgba(0, 0, 0, 0.65)",
-                      fontWeight: active ? 600 : 400,
-                      transition: "color 0.15s",
-                    }}
                   >
                     {item.name}
                   </button>
@@ -208,13 +174,10 @@ export default function HotList({
         </div>
 
         {/* 列表 */}
-        <div
-          className="hot-list-scroll"
-          style={{ flex: 1, minHeight: 0, overflowY: "auto" }}
-        >
+        <div className="dx-scroll">
           {error && !payload ? (
             <Alert
-              style={{ margin: 12 }}
+              className="dx-pad-sm"
               type="error"
               showIcon
               title={error}
@@ -225,14 +188,14 @@ export default function HotList({
               }
             />
           ) : loading && !payload ? (
-            <div style={{ padding: 16 }}>
+            <div className="dx-pad-md">
               <Skeleton active title={false} paragraph={{ rows: 9 }} />
             </div>
           ) : (payload?.items?.length ?? 0) === 0 ? (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description="当前信息源暂无数据"
-              style={{ padding: 24 }}
+              className="dx-pad-lg"
             />
           ) : (
             <div>
@@ -240,30 +203,14 @@ export default function HotList({
                 const hotLabel = formatHot(item.hot);
                 const link = item.mobileUrl || item.url;
                 return (
-                  <div
-                    key={`${item.id}-${index}`}
-                    style={{
-                      padding: "7px 14px",
-                      display: "flex",
-                      gap: 6,
-                      alignItems: "center",
-                    }}
-                  >
+                  <div key={`${item.id}-${index}`} className="dx-hot-row">
                     <span
-                      style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: 8,
-                        flexShrink: 0,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 13,
-                        lineHeight: 1,
-                        fontWeight: 500,
-                        background: index < 3 ? RANK_BG[index] : "rgba(0, 0, 0, 0.06)",
-                        color: index < 3 ? "#fff" : "rgba(0, 0, 0, 0.45)",
-                      }}
+                      className="dx-rank"
+                      style={
+                        index < 3
+                          ? { background: RANK_BG[index], color: "#fff" }
+                          : undefined
+                      }
                     >
                       {index + 1}
                     </span>
@@ -271,20 +218,16 @@ export default function HotList({
                       href={link || undefined}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ flex: 1, minWidth: 0, display: "block" }}
+                      className="dx-hot-title"
                     >
                       <Typography.Paragraph
                         ellipsis={{ rows: 2, tooltip: item.title }}
-                        style={{ marginBottom: 0, fontSize: 16 }}
                       >
                         {item.title}
                       </Typography.Paragraph>
                     </Typography.Link>
                     {hotLabel && (
-                      <Typography.Text
-                        type="secondary"
-                        style={{ fontSize: 14, flexShrink: 0 }}
-                      >
+                      <Typography.Text type="secondary" className="dx-hot-value">
                         {hotLabel}
                       </Typography.Text>
                     )}
@@ -297,22 +240,10 @@ export default function HotList({
 
         {/* 底部：更新时间 + 刷新 */}
         {payload && (
-          <Flex
-            align="center"
-            justify="space-between"
-            gap={8}
-            style={{
-              padding: "4px 8px 4px 14px",
-              borderTop: "1px solid rgba(255, 255, 255, 0.4)",
-            }}
-          >
-            <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-              共 {payload.total} 条
-            </Typography.Text>
-            <Flex align="center" gap={4} style={{ flexShrink: 0 }}>
-              <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-                {formatUpdateTime(payload.updateTime)}
-              </Typography.Text>
+          <div className="dx-foot">
+            <span>共 {payload.total} 条</span>
+            <span className="dx-foot-actions">
+              <span>{formatUpdateTime(payload.updateTime)}</span>
               <Tooltip title="刷新">
                 <Button
                   type="text"
@@ -323,8 +254,8 @@ export default function HotList({
                   aria-label="刷新"
                 />
               </Tooltip>
-            </Flex>
-          </Flex>
+            </span>
+          </div>
         )}
       </WidgetCard>
     </ConfigProvider>
