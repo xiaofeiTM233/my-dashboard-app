@@ -1,6 +1,7 @@
 // components/FixedDashboard.tsx
 "use client";
 
+import HotList from "@/components/HotList";
 import SearchBar from "@/components/SearchBar";
 import WidgetCard from "@/components/WidgetCard";
 
@@ -48,9 +49,12 @@ export default function FixedDashboard() {
           />
         </div>
 
-        {/* 右上：跨第 1-2 行的高卡片 */}
-        <div className="min-h-0" style={{ gridColumn: 3, gridRow: "1 / 3" }}>
-          <PlaceholderCard label="右侧卡片" />
+        {/* 右上：跨第 1-2 行的高卡片，接入 DailyHotApi 热榜 */}
+        <div
+          className="min-h-0 min-w-0"
+          style={{ gridColumn: 3, gridRow: "1 / 3" }}
+        >
+          <HotList />
         </div>
 
         {/* 中中 */}
