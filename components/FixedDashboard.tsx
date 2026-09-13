@@ -38,13 +38,13 @@ export default function FixedDashboard() {
           <PlaceholderCard label="左侧卡片" />
         </div>
 
-        {/* 中上：搜索栏 */}
+        {/* 中上：搜索栏（建议为绝对定位浮层，不影响居中） */}
         <div
-          className="flex min-h-0 items-center justify-center"
+          className="relative z-10 flex min-h-0 items-center justify-center"
           style={{ gridColumn: 2, gridRow: 1 }}
         >
           <SearchBar
-            className="relative flex items-center transition-opacity duration-100 focus-within:opacity-100"
+            className="relative flex h-full w-full max-w-[568px] items-center transition-opacity duration-100 focus-within:opacity-100"
             style={{ width: "567.6px", maxWidth: "100%", height: "100%" }}
           />
         </div>

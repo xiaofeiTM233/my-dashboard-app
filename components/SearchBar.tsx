@@ -133,6 +133,8 @@ export default function SearchBar({ className, style }: SearchBarProps = {}) {
       }
       style={style ?? { width: "567.6px" }}
     >
+      {/* 内层定位容器：高度跟输入框走，浮层 top-full 才贴着搜索框 */}
+      <div className="relative w-full">
       <form
         className="relative border-opacity-10 bg-opacity-60 search-box flex h-[52px] items-center rounded-[12px] border-[1px] border-solid border-color-white bg-color-m1 transition-colors duration-100 focus-within:bg-opacity-80 focus-within:!opacity-100 dark:focus-within:bg-opacity-70 w-full"
         style={{ opacity: 1 }}
@@ -161,7 +163,7 @@ export default function SearchBar({ className, style }: SearchBarProps = {}) {
           id="search_input"
           tabIndex={1}
           className="h-full grow bg-[transparent] py-[12px] pl-[4px] pr-[42px] text-[16px] text-color-t1 placeholder:text-color-t1 placeholder:text-opacity-40"
-          type="search"
+          type="text"
           style={{ outline: "none" }}
           placeholder="输入搜索内容"
           autoComplete="off"
@@ -196,7 +198,7 @@ export default function SearchBar({ className, style }: SearchBarProps = {}) {
 
       {/* 搜索建议列表 */}
       {showSuggestions && suggestions.length > 0 && (
-        <section className="suggest-box glass-card mt-[4px] overflow-hidden border-color-white border-opacity-40 text-[14px] dark:border-opacity-10 w-full" style={{ backgroundColor: 'rgb(var(--color-m1) / 0.8)' }}>
+        <section className="suggest-box glass-card absolute top-full left-0 right-0 z-20 mt-[4px] overflow-hidden border-color-white border-opacity-40 text-[14px] dark:border-opacity-10" style={{ backgroundColor: 'rgb(var(--color-m1) / 0.8)' }}>
           <div className="wrapper">
             <ul className="list overflow-auto py-[4px]">
               {/* 搜索引擎选项 */}
@@ -237,7 +239,7 @@ export default function SearchBar({ className, style }: SearchBarProps = {}) {
 
       {/* 引擎选择器 */}
       {showEngineSelector && (
-        <section className="engine-box glass-card mt-[4px] border-color-white border-opacity-40 bg-color-m1 bg-opacity-80 px-[20px] pt-[20px] pb-[24px] dark:border-opacity-10 dark:bg-opacity-70 w-full" data-v-7ac19e27="">
+        <section className="engine-box glass-card absolute top-full left-0 right-0 z-20 mt-[4px] border-color-white border-opacity-40 bg-color-m1 bg-opacity-80 px-[20px] pt-[20px] pb-[24px] dark:border-opacity-10 dark:bg-opacity-70" data-v-7ac19e27="">
           <div className="wrapper text-[12px]" data-v-7ac19e27="">
             <ul className="relative grid grid-cols-[repeat(auto-fill,48px)] gap-[20px]" data-v-7ac19e27="">
               {searchEngines.map((engine) => (
@@ -270,6 +272,7 @@ export default function SearchBar({ className, style }: SearchBarProps = {}) {
           </div>
         </section>
       )}
+      </div>
     </section>
   );
 }
