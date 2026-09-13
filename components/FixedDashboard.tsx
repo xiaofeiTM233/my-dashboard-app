@@ -1,6 +1,7 @@
 // components/FixedDashboard.tsx
 "use client";
 
+import CalendarWidget from "@/components/CalendarWidget";
 import HotList from "@/components/HotList";
 import SearchBar from "@/components/SearchBar";
 import TodoList from "@/components/TodoList";
@@ -58,9 +59,9 @@ export default function FixedDashboard() {
           <HotList />
         </div>
 
-        {/* 中中 */}
+        {/* 中中：日历（左当天详情 / 右月历） */}
         <div className="min-h-0" style={{ gridColumn: 2, gridRow: 2 }}>
-          <PlaceholderCard label="中中卡片" />
+          <CalendarWidget />
         </div>
 
         {/* 左下 */}
