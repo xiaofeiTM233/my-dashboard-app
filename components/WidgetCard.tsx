@@ -8,12 +8,18 @@ interface WidgetCardProps {
   children?: ReactNode;
   /** 额外 className */
   className?: string;
+  /** 内容容器 className，默认整体居中 */
+  contentClassName?: string;
 }
 
 /**
  * 卡片通用外壳：统一的圆角、玻璃拟态背景与边框。
  */
-export default function WidgetCard({ children, className = "" }: WidgetCardProps) {
+export default function WidgetCard({
+  children,
+  className = "",
+  contentClassName,
+}: WidgetCardProps) {
   return (
     <div
       className={[
@@ -26,7 +32,12 @@ export default function WidgetCard({ children, className = "" }: WidgetCardProps
         .filter(Boolean)
         .join(" ")}
     >
-      <div className="flex h-full w-full items-center justify-center p-[12px]">
+      <div
+        className={
+          contentClassName ??
+          "flex h-full w-full items-center justify-center p-[12px]"
+        }
+      >
         {children}
       </div>
     </div>
