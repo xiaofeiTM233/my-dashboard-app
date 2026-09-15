@@ -12,7 +12,6 @@ const API_BASE = (
   process.env.DIDA_API_BASE || "https://api.dida365.com/open/v1"
 ).replace(/\/+$/, "");
 
-const LIST_CACHE_TTL = 2 * 60 * 1000;
 const UPSTREAM_TIMEOUT = 15_000;
 
 export const dynamic = "force-dynamic";
@@ -108,8 +107,6 @@ export interface TodoDetailDto {
   overdue: boolean;
 }
 
-const listCache = new Map<string, { expiresAt: number; payload: TodoListPayload }>();
-
 function authHeaders() {
   const token = process.env.DIDA_ACCESS_TOKEN;
   if (!token) return null;
@@ -137,7 +134,7 @@ export async function GET(request: NextRequest) {
     try {
       const detail = await fetchTaskDetail(headers, projectId, taskId);
       return Response.json(
-        { ok: true, fromCache: false, data: detail },
+        { ok: true, data: detail },
         { headers: { "Cache-Control": "no-store" } },
       );
     } catch (error) {
@@ -146,23 +143,12 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const force = searchParams.get("refresh") === "1";
   const days = Math.min(Math.max(Number(searchParams.get("days")) || 7, 1), 14);
-  const cacheKey = `list:${days}`;
-
-  if (!force) {
-    const hit = listCache.get(cacheKey);
-    if (hit && hit.expiresAt > Date.now()) {
-      return ok(hit.payload, true);
-    }
-  }
 
   try {
     const payload = await buildListPayload(headers, days);
-    listCache.set(cacheKey, { expiresAt: Date.now() + LIST_CACHE_TTL, payload });
-    return ok(payload, false);
+    return ok(payload);
   } catch (error) {
-    listCache.delete(cacheKey);
     const message = error instanceof Error ? error.message : "请求滴答清单失败";
     return fail(message, 502);
   }
@@ -198,7 +184,6 @@ export async function POST(request: NextRequest) {
       throw new Error(`创建任务失败（${res.status}）`);
     }
     const created = await res.json();
-    listCache.clear();
     return Response.json(
       { ok: true, data: created },
       { headers: { "Cache-Control": "no-store" } },
@@ -220,11 +205,42 @@ export async function PATCH(request: NextRequest) {
     projectId?: string;
     status?: number;
     title?: string;
+    tasks?: { id: string; projectId: string }[];
   };
   try {
     body = await request.json();
   } catch {
     return fail("请求体不是合法 JSON", 400);
+  }
+
+  // 批量完成：{ status: 2, tasks: [{ id, projectId }] }
+  if (Array.isArray(body.tasks) && body.tasks.length > 0) {
+    if (body.status !== 2) {
+      return fail("批量操作仅支持完成任务（status=2）", 400);
+    }
+    if (body.tasks.length > 100) {
+      return fail("单次最多批量完成 100 项", 400);
+    }
+    // 限制并发，避免突发请求触发上游限流
+    const queue = [...body.tasks];
+    const failedIds: string[] = [];
+    let success = 0;
+    const worker = async () => {
+      while (queue.length > 0) {
+        const t = queue.shift()!;
+        try {
+          await completeTask(headers, t.projectId, t.id);
+          success += 1;
+        } catch {
+          failedIds.push(t.id);
+        }
+      }
+    };
+    await Promise.all([worker(), worker(), worker()]);
+    return Response.json(
+      { ok: true, data: { success, failed: failedIds.length, failedIds } },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   }
 
   const id = body.id;
@@ -235,17 +251,7 @@ export async function PATCH(request: NextRequest) {
   try {
     // 完成任务：POST /open/v1/project/{projectId}/task/{taskId}/complete
     if (body.status === 2) {
-      const res = await fetch(
-        `${API_BASE}/project/${encodeURIComponent(projectId)}/task/${encodeURIComponent(id)}/complete`,
-        { method: "POST", headers },
-      );
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(
-          `完成任务失败（${res.status}）${text ? `: ${text.slice(0, 200)}` : ""}`,
-        );
-      }
-      listCache.clear();
+      await completeTask(headers, projectId, id);
       return Response.json(
         { ok: true, data: { id, status: 2 } },
         { headers: { "Cache-Control": "no-store" } },
@@ -299,7 +305,6 @@ export async function PATCH(request: NextRequest) {
       );
     }
     const updated = await updateRes.json();
-    listCache.clear();
     return Response.json(
       { ok: true, data: updated },
       { headers: { "Cache-Control": "no-store" } },
@@ -307,6 +312,24 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "更新任务失败";
     return fail(message, 502);
+  }
+}
+
+async function completeTask(
+  headers: Record<string, string>,
+  projectId: string,
+  id: string,
+) {
+  // 文档：POST /open/v1/project/{projectId}/task/{taskId}/complete
+  const res = await fetch(
+    `${API_BASE}/project/${encodeURIComponent(projectId)}/task/${encodeURIComponent(id)}/complete`,
+    { method: "POST", headers },
+  );
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(
+      `完成任务失败（${res.status}）${text ? `: ${text.slice(0, 200)}` : ""}`,
+    );
   }
 }
 
@@ -622,9 +645,9 @@ function compareTask(a: TodoTaskDto, b: TodoTaskDto, todayFirst: boolean) {
   return a.title.localeCompare(b.title, "zh-CN");
 }
 
-function ok(data: TodoListPayload, fromCache: boolean) {
+function ok(data: TodoListPayload) {
   return Response.json(
-    { ok: true, fromCache, data },
+    { ok: true, data },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

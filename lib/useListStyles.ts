@@ -176,12 +176,18 @@ const CSS = `
   min-height: 32px;
   padding: 6px 14px 6px 10px;
 }
+.dx-list-row.is-select-mode {
+  cursor: pointer;
+}
+.dx-list-row.is-selected {
+  background: rgba(74, 122, 255, 0.08);
+}
 .dx-check {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
   border-radius: 4px;
-  border: 1.5px solid #c9c9ce;
+  border: 1.5px solid var(--dx-check-color, #c9c9ce);
   background: transparent;
   cursor: pointer;
   padding: 0;
@@ -197,7 +203,7 @@ const CSS = `
   cursor: wait;
 }
 .dx-check.is-checked {
-  /* background/border 由 inline 按优先级上色 */
+  background: var(--dx-check-color, #c9c9ce);
 }
 .dx-task-title {
   flex: 1;
@@ -285,12 +291,6 @@ const CSS = `
   height: 8px;
   border-radius: 50%;
 }
-.dx-popup-tags {
-  margin-top: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
 .dx-popup-content {
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   padding-top: 12px;
@@ -308,7 +308,7 @@ const CSS = `
   margin-top: 3px;
   flex-shrink: 0;
   border-radius: 4px;
-  border: 1.5px solid #c9c9ce;
+  border: 1.5px solid var(--dx-check-color, #c9c9ce);
   background: transparent;
   cursor: pointer;
   padding: 0;

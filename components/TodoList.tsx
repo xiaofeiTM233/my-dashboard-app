@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { createPortal } from "react-dom";
 import {
   Alert,
@@ -13,7 +19,12 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import {
+  CheckCircleOutlined,
+  CheckSquareOutlined,
+  CloseCircleOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
 import WidgetCard from "@/components/WidgetCard";
 import { useListStyles } from "@/lib/useListStyles";
 
@@ -98,6 +109,13 @@ function formatRefreshTime(date: Date): string {
   return `${pad(date.getHours())}:${pad(date.getMinutes())} 更新`;
 }
 
+/** 本地列表缓存：key 为 days，重挂载/切换页签时秒开，30 秒内不重复请求 */
+const listCache = new Map<
+  string,
+  { payload: TodoListPayload; fetchedAt: number }
+>();
+const LIST_CACHE_TTL = 30 * 1000;
+
 /** 左侧卡片：滴答清单「最近 N 天」任务列表 */
 function TodoListInner({
   days = 7,
@@ -111,10 +129,13 @@ function TodoListInner({
   const [refreshedAt, setRefreshedAt] = useState<Date | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [busyIds, setBusyIds] = useState<Record<string, boolean>>({});
-  /** 点击后本地先打勾的 id，等接口成功再真正移除 */
+  /** 点击后本地先打勾的 id，列表刷新到服务端状态后清空 */
   const [optimisticChecked, setOptimisticChecked] = useState<
     Record<string, boolean>
   >({});
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchBusy, setBatchBusy] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detail, setDetail] = useState<TodoDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -130,6 +151,18 @@ function TodoListInner({
 
   const load = useCallback(
     async (force = false) => {
+      // 命中本地缓存直接渲染
+      if (!force) {
+        const hit = listCache.get(String(days));
+        if (hit && Date.now() - hit.fetchedAt < LIST_CACHE_TTL) {
+          setPayload(hit.payload);
+          setRefreshedAt(new Date(hit.fetchedAt));
+          setError(null);
+          setLoading(false);
+          return;
+        }
+      }
+
       const requestId = ++requestIdRef.current;
       abortRef.current?.abort();
       const controller = new AbortController();
@@ -139,8 +172,7 @@ function TodoListInner({
       setError(null);
 
       try {
-        const query = `?days=${days}${force ? "&refresh=1" : ""}`;
-        const res = await fetch(`/api/todo${query}`, {
+        const res = await fetch(`/api/todo?days=${days}`, {
           signal: controller.signal,
         });
         const json = (await res.json()) as {
@@ -153,7 +185,13 @@ function TodoListInner({
           throw new Error(json.message || "获取任务失败");
         }
         setPayload(json.data);
+        listCache.set(String(days), {
+          payload: json.data,
+          fetchedAt: Date.now(),
+        });
         setRefreshedAt(new Date());
+        // 以服务端状态为准，清掉乐观勾选（重复任务完成会生成同 id 的新实例）
+        setOptimisticChecked({});
         if (!collapsedInitRef.current) {
           collapsedInitRef.current = true;
           const nextCollapsed: Record<string, boolean> = {};
@@ -174,12 +212,13 @@ function TodoListInner({
   );
 
   useEffect(() => {
+    // 优先用本地缓存秒开，过期或不命中才拉新
     void load();
   }, [load]);
 
   useEffect(() => {
     if (refreshInterval <= 0) return;
-    const timer = setInterval(() => void load(), refreshInterval);
+    const timer = setInterval(() => void load(true), refreshInterval);
     return () => clearInterval(timer);
   }, [refreshInterval, load]);
 
@@ -236,6 +275,89 @@ function TodoListInner({
 
   const toggleCollapse = (key: string) => {
     setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  /** 当前展开分组里的任务（多选只作用于可见行） */
+  const visibleTasks: TodoTask[] = [];
+  for (const g of payload?.groups ?? []) {
+    if (!collapsed[g.key]) visibleTasks.push(...g.tasks);
+  }
+  const selectedCount = selectedIds.size;
+
+  const enterSelectMode = () => {
+    setSelectedIds(new Set());
+    setSelectMode(true);
+  };
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const toggleSelected = (id: string) => {
+    // Ctrl 点选也会走到这里：自动进入多选模式
+    setSelectMode(true);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBatchComplete = async () => {
+    if (batchBusy || selectedCount === 0) return;
+    const selected = visibleTasks.filter((t) => selectedIds.has(t.id));
+    if (selected.length === 0) return;
+
+    setBatchBusy(true);
+    // 本地先全部打勾
+    setOptimisticChecked((prev) => {
+      const next = { ...prev };
+      for (const t of selected) next[t.id] = true;
+      return next;
+    });
+
+    try {
+      const res = await fetch("/api/todo", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: 2,
+          tasks: selected.map((t) => ({ id: t.id, projectId: t.projectId })),
+        }),
+      });
+      const json = (await res.json()) as {
+        ok?: boolean;
+        message?: string;
+        data?: { success?: number; failed?: number; failedIds?: string[] };
+      };
+      if (!res.ok || !json.ok) {
+        throw new Error(json.message || "批量完成任务失败");
+      }
+      await load(true);
+      const failedIds = json.data?.failedIds ?? [];
+      if (failedIds.length > 0) {
+        // 失败的保持选中，便于一键重试
+        message.warning(
+          `已批量完成 ${json.data?.success ?? 0} 项，${failedIds.length} 项失败，可点击确认按钮重试`,
+        );
+        setSelectedIds(new Set(failedIds));
+      } else {
+        message.success(`已批量完成 ${selected.length} 项任务`);
+        exitSelectMode();
+      }
+    } catch (err) {
+      // 失败回滚勾选状态
+      setOptimisticChecked((prev) => {
+        const next = { ...prev };
+        for (const t of selected) delete next[t.id];
+        return next;
+      });
+      message.error(err instanceof Error ? err.message : "批量完成任务失败");
+    } finally {
+      setBatchBusy(false);
+    }
   };
 
   const openDetail = async (task: TodoTask, rect: DOMRect) => {
@@ -302,6 +424,17 @@ function TodoListInner({
     };
   }, [detailId]);
 
+  // 多选模式下按 Esc 退出
+  useEffect(() => {
+    if (!selectMode) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") exitSelectMode();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectMode]);
+
   return (
     <ConfigProvider theme={{ token: { colorPrimary: "#4A7AFF" } }}>
       <WidgetCard
@@ -363,7 +496,10 @@ function TodoListInner({
                         task={task}
                         busy={Boolean(busyIds[task.id])}
                         checked={Boolean(optimisticChecked[task.id])}
+                        selectMode={selectMode}
+                        selected={selectedIds.has(task.id)}
                         onToggle={() => void handleToggle(task)}
+                        onSelect={() => toggleSelected(task.id)}
                         onOpen={(rect) => void openDetail(task, rect)}
                       />
                     ))}
@@ -378,6 +514,44 @@ function TodoListInner({
             <span>共 {payload.total} 条</span>
             <span className="dx-foot-actions">
               {refreshedAt && <span>{formatRefreshTime(refreshedAt)}</span>}
+              <Tooltip
+                title={
+                  selectMode
+                    ? selectedCount > 0
+                      ? `完成已选 ${selectedCount} 项`
+                      : "取消多选"
+                    : "多选（Ctrl+点击行）"
+                }
+              >
+                <Button
+                  type="text"
+                  size="small"
+                  icon={
+                    selectMode ? (
+                      selectedCount > 0 ? (
+                        <CheckCircleOutlined />
+                      ) : (
+                        <CloseCircleOutlined />
+                      )
+                    ) : (
+                      <CheckSquareOutlined />
+                    )
+                  }
+                  loading={batchBusy}
+                  onClick={() => {
+                    if (!selectMode) enterSelectMode();
+                    else if (selectedCount > 0) void handleBatchComplete();
+                    else exitSelectMode();
+                  }}
+                  aria-label={
+                    selectMode
+                      ? selectedCount > 0
+                        ? "完成已选任务"
+                        : "取消多选"
+                      : "多选"
+                  }
+                />
+              </Tooltip>
               <Tooltip title="刷新">
                 <Button
                   type="text"
@@ -426,10 +600,12 @@ function TodoListInner({
                         void handleToggle(detail);
                         closeDetail();
                       }}
-                      style={{
-                        borderColor:
-                          CHECK_BORDER[detail.priority] ?? CHECK_BORDER[0],
-                      }}
+                      style={
+                        {
+                          "--dx-check-color":
+                            CHECK_BORDER[detail.priority] ?? CHECK_BORDER[0],
+                        } as CSSProperties
+                      }
                     />
                     <div className="dx-popup-body">
                       <div className="dx-popup-title">{detail.title}</div>
@@ -443,6 +619,17 @@ function TodoListInner({
                         >
                           {detail.projectName}
                         </span>
+                        {detail.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="dx-tag"
+                            style={{ background: tagColor(tag) }}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="dx-popup-meta">
                         {(detail.dueDate || detail.startDate) && (
                           <Tag
                             color={detail.overdue ? "red" : "blue"}
@@ -465,19 +652,6 @@ function TodoListInner({
                         {detail.hasReminder && <Tag>有提醒</Tag>}
                         {detail.repeatFlag && <Tag color="purple">重复</Tag>}
                       </div>
-                      {detail.tags.length > 0 && (
-                        <div className="dx-popup-tags">
-                          {detail.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="dx-tag"
-                              style={{ background: tagColor(tag) }}
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -537,13 +711,19 @@ function TaskRow({
   task,
   busy,
   checked,
+  selectMode,
+  selected,
   onToggle,
+  onSelect,
   onOpen,
 }: {
   task: TodoTask;
   busy: boolean;
   checked: boolean;
+  selectMode: boolean;
+  selected: boolean;
   onToggle: () => void;
+  onSelect: () => void;
   onOpen: (rect: DOMRect) => void;
 }) {
   const border = CHECK_BORDER[task.priority] ?? CHECK_BORDER[0];
@@ -556,27 +736,47 @@ function TaskRow({
 
   return (
     <div
-      className="dx-list-row"
+      className={`dx-list-row${selectMode ? " is-select-mode" : ""}${selected ? " is-selected" : ""}`}
       style={{ borderLeft: `3px solid ${task.projectColor}` }}
+      onClick={(e) => {
+        // 多选模式整行点击选中；普通模式按住 Ctrl/Cmd 点行多选
+        if (selectMode || e.ctrlKey || e.metaKey) onSelect();
+      }}
     >
       <button
         type="button"
-        className={`dx-check${isChecked ? " is-checked" : ""}`}
-        aria-label={isChecked ? "标记未完成" : "标记完成"}
-        disabled={busy}
-        onClick={onToggle}
-        style={{
-          borderColor: border,
-          background: isChecked ? border : "transparent",
+        className={`dx-check${(selectMode ? selected : isChecked) ? " is-checked" : ""}`}
+        aria-label={
+          selectMode
+            ? selected
+              ? "取消选择"
+              : "选择任务"
+            : isChecked
+              ? "标记未完成"
+              : "标记完成"
+        }
+        disabled={selectMode ? false : busy}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (selectMode) onSelect();
+          else onToggle();
         }}
+        style={
+          {
+            "--dx-check-color": selectMode ? "#4A7AFF" : border,
+          } as CSSProperties
+        }
       >
-        {isChecked ? "✓" : ""}
+        {selectMode ? (selected ? "✓" : "") : isChecked ? "✓" : ""}
       </button>
 
       <div
         data-todo-row-title
-        className={`dx-task-title${isChecked ? " is-done" : ""}`}
-        onClick={(e) => onOpen(e.currentTarget.getBoundingClientRect())}
+        className={`dx-task-title${!selectMode && isChecked ? " is-done" : ""}`}
+        onClick={(e) => {
+          if (selectMode || e.ctrlKey || e.metaKey) return; // 交给行级处理选中
+          onOpen(e.currentTarget.getBoundingClientRect());
+        }}
         title={task.title}
       >
         {task.hasSub && (
