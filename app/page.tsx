@@ -40,7 +40,7 @@ export default function Home() {
             <SearchBar />
           </>
         ) : (
-          // 卡片视图：固定布局仪表盘（搜索栏已嵌入网格中上位置）
+          // 卡片视图：固定布局仪表盘（搜索栏绝对定位，位置与极简视图一致）
           <div className="absolute left-0 top-0 h-full w-full">
             <FixedDashboard />
           </div>
