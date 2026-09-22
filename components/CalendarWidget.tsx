@@ -72,7 +72,8 @@ export default function CalendarWidget() {
     };
   }, [now]);
 
-  const didFocusToday = useRef(false);
+  /** 已自动聚焦过的日期；跨日后与新日期不一致，会再次执行一次「聚焦今天」 */
+  const focusedDateRef = useRef<string | null>(null);
   const [flashKey, setFlashKey] = useState(0);
 
   const focusToday = () => {
@@ -91,7 +92,8 @@ export default function CalendarWidget() {
   };
 
   useEffect(() => {
-    if (didFocusToday.current || !payload) return;
+    // 首次挂载、以及跨日换日后（dateKey 变化）都执行一次聚焦；同一日期内不重复打扰
+    if (!payload || focusedDateRef.current === todayKey) return;
     const el = gridScrollRef.current;
     if (!el) return;
     const idx = payload.days.findIndex((d) => d.date === todayKey);
@@ -100,7 +102,7 @@ export default function CalendarWidget() {
     const firstCell = el.querySelector<HTMLElement>("[data-cal-cell]");
     const rowH = firstCell ? firstCell.offsetHeight + 4 : 58;
     el.scrollTop = Math.max(0, row * rowH - 4);
-    didFocusToday.current = true;
+    focusedDateRef.current = todayKey;
 
     // 以滚动后的实际首行为准（可能被夹紧）：含「今天」则高亮本月
     const firstVisibleRow = Math.round(el.scrollTop / rowH);
