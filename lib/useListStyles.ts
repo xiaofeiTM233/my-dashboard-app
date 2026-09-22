@@ -320,6 +320,17 @@ const CSS = `
 .dx-pad-lg { padding: 24px; }
 .dx-list-body { padding-top: 4px; }
 
+/* 空态 / 错误态：撑满滚动区并垂直居中 */
+.dx-scroll .ant-empty.dx-state {
+  box-sizing: border-box;
+  min-height: 100%;
+  margin-block: 0;
+  padding-inline: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 /* 日历文字色 */
 .cal-primary { color: rgba(0, 0, 0, 0.88); }
 .cal-secondary { color: rgba(0, 0, 0, 0.65); }

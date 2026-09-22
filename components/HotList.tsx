@@ -2,7 +2,6 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import {
-  Alert,
   Button,
   ConfigProvider,
   Empty,
@@ -176,27 +175,17 @@ export default function HotList({
         {/* 列表 */}
         <div className="dx-scroll">
           {error && !payload ? (
-            <Alert
-              className="dx-pad-sm"
-              type="error"
-              showIcon
-              title={error}
-              action={
-                <Button size="small" onClick={() => void load(sourceId, true)}>
-                  重试
-                </Button>
-              }
-            />
+            <Empty className="dx-state" description={error}>
+              <Button size="small" onClick={() => void load(sourceId, true)}>
+                重试
+              </Button>
+            </Empty>
           ) : loading && !payload ? (
             <div className="dx-pad-md">
-              <Skeleton active title={false} paragraph={{ rows: 9 }} />
+              <Skeleton active title={false} paragraph={{ rows: 12 }} />
             </div>
           ) : (payload?.items?.length ?? 0) === 0 ? (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="当前信息源暂无数据"
-              className="dx-pad-lg"
-            />
+            <Empty className="dx-state" description="当前信息源暂无数据" />
           ) : (
             <div>
               {(payload?.items ?? []).map((item, index) => {

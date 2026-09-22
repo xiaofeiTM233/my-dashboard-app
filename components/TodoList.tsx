@@ -444,27 +444,17 @@ function TodoListInner({
         {/* 列表 */}
         <div className="dx-scroll dx-list-body">
           {error && !payload ? (
-            <Alert
-              className="dx-pad-sm"
-              type="error"
-              showIcon
-              title={error}
-              action={
-                <Button size="small" onClick={() => void load(true)}>
-                  重试
-                </Button>
-              }
-            />
+            <Empty className="dx-state" description={error}>
+              <Button size="small" onClick={() => void load(true)}>
+                重试
+              </Button>
+            </Empty>
           ) : loading && !payload ? (
             <div className="dx-pad-md">
               <Skeleton active title={false} paragraph={{ rows: 10 }} />
             </div>
           ) : (payload?.groups.length ?? 0) === 0 ? (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="最近没有任务"
-              className="dx-pad-lg"
-            />
+            <Empty className="dx-state" description="最近没有任务" />
           ) : (
             (payload?.groups ?? []).map((group) => {
               const isCollapsed = collapsed[group.key];
