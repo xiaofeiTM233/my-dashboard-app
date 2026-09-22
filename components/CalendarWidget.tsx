@@ -24,6 +24,29 @@ function splitGz(hit: Pick<CalendarPayload, "gzYear" | "gzMonth" | "gzDate">): s
   return parts.join("");
 }
 
+/**
+ * 解析高亮月份（顶部标签 + 网格内非本月淡显的依据）。
+ *
+ * 规则：可见首行包含「今天」时高亮【本月】，不再由下方行推导；
+ * 否则取首行下方 offset 行（滚动区中部）所在月份。
+ */
+function resolveFocusMonth(
+  payload: CalendarPayload,
+  todayKey: string,
+  firstRow: number,
+  rowOffset: number,
+): { y: number; m: number } | null {
+  const row = Math.max(0, firstRow);
+  const rowCells = payload.days.slice(row * 7, row * 7 + 7);
+  if (rowCells.some((cell) => cell.date === todayKey)) {
+    return { y: payload.year, m: payload.month };
+  }
+  const cell = payload.days[Math.min(payload.days.length - 1, (row + rowOffset) * 7)];
+  if (!cell) return null;
+  const [y, m] = cell.date.split("-").map(Number);
+  return { y, m };
+}
+
 /** 中中卡片：只请求当月一次；左当天详情，右当月网格 */
 export default function CalendarWidget() {
   useListStyles();
@@ -61,12 +84,9 @@ export default function CalendarWidget() {
     const firstCell = el.querySelector<HTMLElement>("[data-cal-cell]");
     const rowH = firstCell ? firstCell.offsetHeight + 4 : 58;
     el.scrollTo({ top: Math.max(0, row * rowH - 4), behavior: "smooth" });
-    const anchor =
-      payload.days[Math.min(payload.days.length - 1, row * 7 + 14)] ?? payload.days[idx];
-    if (anchor) {
-      const [yy, mm] = anchor.date.split("-").map(Number);
-      queueMicrotask(() => setFocusMonth({ y: yy, m: mm }));
-    }
+    // 今天所在行即滚动后的首行 → 按规则高亮本月（若滚动被夹紧，由滚动监听修正）
+    const target = resolveFocusMonth(payload, todayKey, row, 2);
+    if (target) queueMicrotask(() => setFocusMonth(target));
     setFlashKey((k) => k + 1);
   };
 
@@ -82,12 +102,10 @@ export default function CalendarWidget() {
     el.scrollTop = Math.max(0, row * rowH - 4);
     didFocusToday.current = true;
 
-    const anchor =
-      payload.days[Math.min(payload.days.length - 1, row * 7 + 14)] ?? payload.days[idx];
-    if (anchor) {
-      const [yy, mm] = anchor.date.split("-").map(Number);
-      queueMicrotask(() => setFocusMonth({ y: yy, m: mm }));
-    }
+    // 以滚动后的实际首行为准（可能被夹紧）：含「今天」则高亮本月
+    const firstVisibleRow = Math.round(el.scrollTop / rowH);
+    const target = resolveFocusMonth(payload, todayKey, firstVisibleRow, 2);
+    if (target) queueMicrotask(() => setFocusMonth(target));
   }, [payload, todayKey]);
 
   useEffect(() => {
@@ -101,20 +119,18 @@ export default function CalendarWidget() {
       const rowsVisible = Math.max(1, Math.floor(el.clientHeight / rowH));
       const targetRowOffset = Math.min(2, rowsVisible - 1);
       const firstVisibleRow = Math.round(el.scrollTop / rowH);
-      const targetIdx = (firstVisibleRow + targetRowOffset) * 7;
-      const cell = payload.days[Math.min(payload.days.length - 1, Math.max(0, targetIdx))];
-      if (!cell) return;
-      const [yy, mm] = cell.date.split("-").map(Number);
+      const target = resolveFocusMonth(payload, todayKey, firstVisibleRow, targetRowOffset);
+      if (!target) return;
       setFocusMonth((prev) => {
-        if (prev && prev.y === yy && prev.m === mm) return prev;
-        return { y: yy, m: mm };
+        if (prev && prev.y === target.y && prev.m === target.m) return prev;
+        return target;
       });
     };
 
     update();
     el.addEventListener("scroll", update, { passive: true });
     return () => el.removeEventListener("scroll", update);
-  }, [payload]);
+  }, [payload, todayKey]);
 
   const leftToday = useMemo(() => {
     if (!payload) return null;
