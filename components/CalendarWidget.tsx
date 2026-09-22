@@ -2,46 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import WidgetCard from "@/components/WidgetCard";
+import { getDateKey, useCalendar, type CalendarPayload } from "@/lib/calendarCache";
 import { useListStyles } from "@/lib/useListStyles";
-
-interface CalendarDayCell {
-  date: string;
-  day: number;
-  inMonth: boolean;
-  lunar: string | null;
-  festivals: string[];
-  term: string | null;
-}
-
-interface CalendarPayload {
-  date: string;
-  year: number;
-  month: number;
-  weekday: string | null;
-  lunar: string | null;
-  festivals: string[];
-  term: string | null;
-  animal: string | null;
-  gzYear: string | null;
-  gzMonth: string | null;
-  gzDate: string | null;
-  suit: string[];
-  avoid: string[];
-  days: CalendarDayCell[];
-}
 
 const WEEK_LABELS = ["日", "一", "二", "三", "四", "五", "六"];
 const WEEKDAY_FULL = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
 
 /** 7 列共用宽度；格子约 4:3 */
 const GRID_WIDTH = 500;
-
-function toDateKey(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
 
 /** 格内农历只留日名，避免「八月廿二」被截断 */
 function shortLunar(lunar: string | null): string {
@@ -59,14 +27,13 @@ function splitGz(hit: Pick<CalendarPayload, "gzYear" | "gzMonth" | "gzDate">): s
 /** 中中卡片：只请求当月一次；左当天详情，右当月网格 */
 export default function CalendarWidget() {
   useListStyles();
-  const todayKey = useMemo(() => toDateKey(new Date()), []);
-  const [payload, setPayload] = useState<CalendarPayload | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const requestIdRef = useRef(0);
+  const [now, setNow] = useState(() => new Date());
+  // 跟随系统日期：跨零点自动换日，缓存随之失效并重新拉取；
+  // 每秒重算成本极低，且字符串按值比较，依赖它的 effect 不会被重复触发
+  const todayKey = getDateKey(now);
+  const { payload, loading, error } = useCalendar(todayKey);
   const gridScrollRef = useRef<HTMLDivElement | null>(null);
   const [focusMonth, setFocusMonth] = useState<{ y: number; m: number } | null>(null);
-  const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -81,37 +48,6 @@ export default function CalendarWidget() {
       seconds: pad(now.getSeconds()),
     };
   }, [now]);
-
-  useEffect(() => {
-    const requestId = ++requestIdRef.current;
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const res = await fetch(`/api/calendar?date=${todayKey}`, { cache: "no-store" });
-        const json = (await res.json()) as {
-          ok?: boolean;
-          message?: string;
-          data?: CalendarPayload;
-        };
-        if (cancelled || requestId !== requestIdRef.current) return;
-        if (!res.ok || !json.ok || !json.data) {
-          throw new Error(json.message || "获取万年历失败");
-        }
-        setPayload(json.data);
-        setError(null);
-        setLoading(false);
-      } catch (err) {
-        if (cancelled || requestId !== requestIdRef.current) return;
-        setError(err instanceof Error ? err.message : "获取万年历失败");
-        setLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [todayKey]);
 
   const didFocusToday = useRef(false);
   const [flashKey, setFlashKey] = useState(0);

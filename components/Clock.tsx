@@ -2,24 +2,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-
-interface CalendarInfo {
-  lunar: string | null;
-  festivals: string[];
-}
-
-function toDateKey(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
+import { getDateKey, useCalendar } from "@/lib/calendarCache";
 
 export default function Clock() {
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
-  const [calendar, setCalendar] = useState<CalendarInfo | null>(null);
   const isInitialMount = useRef(true);
-  const fetchedDateKey = useRef<string | null>(null);
 
   useEffect(() => {
     if (isInitialMount.current) {
@@ -34,38 +21,10 @@ export default function Clock() {
     return () => clearInterval(timer);
   }, []);
 
-  const dateKey = currentTime ? toDateKey(currentTime) : "";
+  const dateKey = currentTime ? getDateKey(currentTime) : "";
 
-  useEffect(() => {
-    if (!dateKey || fetchedDateKey.current === dateKey) return;
-
-    let cancelled = false;
-    fetchedDateKey.current = dateKey;
-
-    (async () => {
-      try {
-        const res = await fetch(`/api/calendar?date=${dateKey}`, {
-          cache: "no-store",
-        });
-        if (!res.ok) return;
-        const json = (await res.json()) as {
-          ok?: boolean;
-          data?: { lunar?: string | null; festivals?: string[] };
-        };
-        if (cancelled || !json.ok || !json.data) return;
-        setCalendar({
-          lunar: json.data.lunar ?? null,
-          festivals: Array.isArray(json.data.festivals) ? json.data.festivals : [],
-        });
-      } catch {
-        // 网络失败时保留已有展示，不打断时钟
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [dateKey]);
+  // 与卡片视图共用同一份缓存：同一天内不重复请求，换日才重新拉取
+  const { payload: calendar } = useCalendar(dateKey);
 
   const formatTime = (date: Date) => {
     const hours = date.getHours().toString().padStart(2, "0");
@@ -92,7 +51,7 @@ export default function Clock() {
   const dateStr = currentTime ? formatDate(currentTime) : "";
   const weekdayStr = currentTime ? formatWeekday(currentTime) : "";
   const lunarStr = calendar?.lunar ?? "";
-  const festivalStr = calendar?.festivals?.join(" ") ?? "";
+  const festivalStr = calendar?.festivals.join(" ") ?? "";
 
   return (
     <section className="page-active absolute flex h-full w-full flex-col items-center">
