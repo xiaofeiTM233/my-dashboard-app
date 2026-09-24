@@ -17,6 +17,10 @@
 /.next/
 /out/
 
+# wxt (浏览器插件构建产物与生成类型)
+/.wxt/
+/.output/
+
 # production
 /build
 

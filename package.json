@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "ext:dev": "wxt",
+    "ext:run": "wxt -b chromium",
+    "ext:build": "wxt build",
+    "ext:icons": "node ext/gen-icons.mjs",
+    "ext:zip": "wxt zip",
+    "typecheck:ext": "tsc -p tsconfig.wxt.json --noEmit"
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.5",
@@ -17,12 +24,16 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@wxt-dev/module-react": "^1.2.2",
     "eslint": "^9",
     "eslint-config-next": "^16.2.9",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "web-ext": "^10.7.0",
+    "wxt": "^0.21.4"
   }
 }

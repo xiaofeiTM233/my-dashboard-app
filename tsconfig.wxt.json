@@ -1,0 +1,23 @@
+{
+  // 插件构建专用。根 tsconfig.json 仍归 Next 使用：两者的 moduleResolution /
+  // include 范围不同，无法合并成一份。
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    // 与 Next 侧保持一致：同一批源文件不该被两套构建以不同严格度评判
+    "noUncheckedIndexedAccess": false,
+    "noUnusedLocals": false,
+    "types": ["node", "vite/client"]
+  },
+  "include": [
+    ".wxt/wxt.d.ts",
+    "entrypoints/**/*.ts",
+    "entrypoints/**/*.tsx",
+    "ext/**/*.ts",
+    "components/**/*.tsx",
+    "lib/**/*.ts",
+    "app/page.tsx",
+    "app/api/**/*.ts"
+  ],
+  "exclude": ["node_modules", ".next", ".output"]
+}

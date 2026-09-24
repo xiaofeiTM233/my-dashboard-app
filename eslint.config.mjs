@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // WXT 的生成类型与插件构建产物
+    ".wxt/**",
+    ".output/**",
   ]),
 ]);
 
